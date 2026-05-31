@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniPy — Language Translation Process Simulator</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP Animation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<canvas id="matrixCanvas"></canvas>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app">
+
+  <!-- ═══════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>MiniPy</h1>
+      <p>Language Translation Process Simulator</p>
+      <span class="course-tag">Compiler Design · Final Project</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" data-section="lexer">
+        <span class="nav-icon">🔤</span> Lexical Analyzer
+        <span class="nav-badge" id="badge-lexer">0</span>
+      </button>
+    </nav>
+
+    <div class="pipeline-status">
+      <h3>Pipeline Status</h3>
+      <div class="status-item">
+        <div class="status-dot done"></div>Source Code Ready
+      </div>
+      <div class="status-item">
+        <div class="status-dot" id="lexer-dot"></div>Lexical Analysis
+      </div>
+    </div>
+
+    <div class="phase-summary" id="phaseSummary">
+      <h4>Compilation Summary</h4>
+      <div id="summaryGrid"></div>
+    </div>
+
+    <div class="bnf-panel" id="bnfPanel">
+      <div class="bnf-header" onclick="toggleBnf()">
+        <span id="bnfPanelTitle">BNF Grammar Reference</span>
+        <span class="bnf-toggle">▼</span>
+      </div>
+      <div class="bnf-body" id="bnfPanelBody">&lt;program&gt;     → &lt;stmt_list&gt;
+&lt;stmt_list&gt;   → &lt;stmt&gt; | &lt;stmt&gt; &lt;stmt_list&gt;
+&lt;stmt&gt;        → &lt;assign_stmt&gt;
+               | &lt;if_stmt&gt;
+               | &lt;print_stmt&gt;
+
+&lt;assign_stmt&gt; → &lt;id&gt; "=" &lt;expression&gt;
+&lt;if_stmt&gt;     → "if" &lt;condition&gt; ":" &lt;print_stmt&gt;
+&lt;print_stmt&gt;  → "print" "(" &lt;string&gt; ")"
+
+&lt;expression&gt;  → &lt;expression&gt; "+" &lt;term&gt;
+               | &lt;expression&gt; "-" &lt;term&gt;
+               | &lt;term&gt;
+&lt;term&gt;        → &lt;term&gt; "*" &lt;factor&gt;
+               | &lt;term&gt; "/" &lt;factor&gt;
+               | &lt;factor&gt;
+&lt;factor&gt;      → &lt;id&gt; | &lt;number&gt;
+
+&lt;condition&gt;   → &lt;expression&gt; &lt;relop&gt; &lt;expression&gt;
+&lt;relop&gt;       → ">" | "<"
+
+&lt;id&gt;     → [a-zA-Z_][a-zA-Z0-9_]*
+&lt;number&gt; → digit+ | digit+"."digit+
+&lt;string&gt; → '"' chars '"'</div>
+    </div>
+
+    <div class="members-card">
+      <h4>👥 Project Members</h4>
+      <div class="member-row">
+        <div class="member-avatar">CA</div>
+        <div>
+          <div class="member-name">Chinjay Arbois</div>
+          <div class="member-role">Lead Developer &amp; Lexer Engineer</div>
+        </div>
+      </div>
+      <div class="member-row">
+        <div class="member-avatar">KO</div>
+        <div>
+          <div class="member-name">Kim Verjette Orsolino</div>
+          <div class="member-role">UI Designer &amp; Presenter</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <h2>MiniPy — Language Translation Process Simulator</h2>
+        <p>Focused phase: <strong style="color:var(--accent)">Lexical Analysis</strong> · Language: <strong style="color:var(--accent2)" id="langLabel">Python</strong></p>
+      </div>
+      <div class="action-group">
+
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
+
+        <button class="btn btn-theme" id="themeBtn">🌙</button>
+
+        <!-- Language Selector -->
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="python">Python</button>
+          <button class="lang-btn" data-lang="cpp">C++</button>
+        </div>
+
+        <button class="btn btn-secondary" id="sampleBtn">Load Sample</button>
+
+        <!-- Step Mode -->
+        <div class="step-controls" id="stepControls">
+          <span class="step-label" id="stepLabel">Step 0/1</span>
+          <button class="btn btn-step" id="nextStepBtn">Next Step →</button>
+        </div>
+        <button class="btn btn-secondary" id="stepModeBtn">⏭ Step Mode</button>
+        <button class="btn btn-primary"   id="compileBtn">▶ Start Translation</button>
+
+      </div>
+    </div>
+
+    <!-- Pipeline Bar -->
+    <div class="pipeline-bar">
+      <div class="pipe-step focused" id="pipe-lexer">
+        <span class="pipe-dot"></span>Lexer ★
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard">
+
+      <!-- ═══ LEFT: Editor ═══ -->
+      <div class="panel">
+        <div class="panel-title">
+          <h3>Source Code Editor</h3>
+          <button class="btn btn-secondary"
+            style="font-size:12px;padding:6px 11px"
+            onclick="clearEditor()">🗑 Clear</button>
+        </div>
+
+        <div class="editor-chrome">
+          <div class="editor-chrome-bar">
+            <div class="chrome-dot" style="background:#ef4444"></div>
+            <div class="chrome-dot" style="background:#f59e0b"></div>
+            <div class="chrome-dot" style="background:#22c55e"></div>
+            <span class="chrome-filename" id="editorFilename">program.minipy</span>
+          </div>
+          <div class="editor-inner">
+            <div class="line-nums" id="lineNums">1</div>
+            <div class="editor-wrap">
+              <textarea class="editor" id="editor"
+                placeholder="Write Python or C++ code here…
+
+Python example:
+  def greet(name):
+      return 'Hello, ' + name
+
+C++ example:
+  #include <iostream>
+  int main() {
+      return 0;
+  }"></textarea>
+              <div class="error-pill" id="errorPill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Token Preview -->
+        <div class="live-preview">
+          <span class="live-label" id="liveLabel">Start typing to see live tokens…</span>
+          <div class="live-chips" id="liveChips"></div>
+        </div>
+
+
+
+      </div><!-- /left panel -->
+
+      <!-- ═══ RIGHT: Results ═══ -->
+      <div class="panel">
+        <div class="panel-title"><h3>Translation Results</h3></div>
+
+        <div class="phase-banner" id="phaseBanner">Waiting for compilation…</div>
+
+        <!-- Error Panel -->
+        <div class="error-panel" id="errorPanel">
+          <div class="error-panel-hdr">
+            <span>⚠ Error Detected — Fix before compiling</span>
+          </div>
+          <div class="error-list" id="errorList"></div>
+        </div>
+
+        <!-- ═══ LEXICAL ANALYZER (ONLY PHASE) ═══ -->
+        <div id="section-lexer" class="section-view active">
+
+          <div class="token-header">
+            <p class="section-title" style="margin:0;border:none;padding:0">🔤 Generated Tokens</p>
+            <span class="token-badge" id="tokenBadge">0 tokens</span>
+          </div>
+          <div class="token-container" id="tokenContainer"></div>
+
+          <div style="margin-top:13px">
+            <p class="section-title">📋 Token Table</p>
+          <div class="token-table-wrap">
+            <table class="token-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Token Type</th>
+                  <th>Token Name</th>
+                  <th>Token Value</th>
+                </tr>
+              </thead>
+              <tbody id="tokenTableBody">
+                <tr>
+                  <td colspan="4" style="color:var(--muted);padding:13px;text-align:center">
+                    Run the compiler to populate the token table.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          </div>
+
+          <div class="var-table-wrap" id="varTableWrap">
+            <p class="section-title" style="margin-top:18px">🧾 Symbol Table</p>
+            <table class="var-table">
+              <thead>
+                <tr>
+                  <th>Variable</th>
+                  <th>Value</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody id="varTableBody">
+                <tr>
+                  <td colspan="3" style="color:var(--muted);padding:13px;text-align:center">
+                    Compiler will populate the symbol table after each run.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Explain Card -->
+          <div class="explain-card open" id="explain-lexer">
+            <div class="explain-hdr" onclick="toggleExplain('explain-lexer')">
+              <span>💡</span>
+              <span id="explainCardTitle">What is Lexical Analysis?</span>
+              <span class="explain-toggle">▼</span>
+            </div>
+            <div class="explain-body" id="explainCardBody">
+
+              <!-- Phase Pipeline Visual -->
+              <div class="la-pipeline">
+                <div class="la-pipe-step la-active">
+                  <div class="la-pipe-icon">📄</div>
+                  <div class="la-pipe-label">Source Code</div>
+                </div>
+                <div class="la-pipe-arrow la-animate-arrow">→</div>
+                <div class="la-pipe-step la-active la-pulse">
+                  <div class="la-pipe-icon">🔍</div>
+                  <div class="la-pipe-label">Lexer</div>
+                  <div class="la-pipe-sub">Phase 1 ★</div>
+                </div>
+                <div class="la-pipe-arrow la-animate-arrow">→</div>
+                <div class="la-pipe-step la-dim">
+                  <div class="la-pipe-icon">🌲</div>
+                  <div class="la-pipe-label">Token Stream</div>
+                </div>
+              </div>
+
+              <p><span class="hlg">Lexical Analysis</span> is the <strong>first phase</strong> of the compiler. It reads raw source code <em>character by character</em> and groups characters into meaningful units called <span class="hl">tokens</span>.</p>
+
+              <!-- Animated scan demo -->
+              <div class="la-scan-demo">
+                <div class="la-scan-label">How the Lexer scans:</div>
+                <div class="la-scan-code" id="laScanCode">
+                  <span class="la-ch la-kw">d</span><span class="la-ch la-kw">e</span><span class="la-ch la-kw">f</span><span class="la-ch la-sp"> </span><span class="la-ch la-id">g</span><span class="la-ch la-id">r</span><span class="la-ch la-id">e</span><span class="la-ch la-id">e</span><span class="la-ch la-id">t</span><span class="la-ch la-dl">(</span><span class="la-ch la-id">x</span><span class="la-ch la-dl">)</span><span class="la-ch la-dl">:</span>
+                </div>
+                <div class="la-scan-tokens">
+                  <span class="la-tok la-tok-kw">KEYWORD<br><em>def</em></span>
+                  <span class="la-tok la-tok-id">IDENTIFIER<br><em>greet</em></span>
+                  <span class="la-tok la-tok-dl">DELIMITER<br><em>(</em></span>
+                  <span class="la-tok la-tok-id">IDENTIFIER<br><em>x</em></span>
+                  <span class="la-tok la-tok-dl">DELIMITER<br><em>)</em></span>
+                  <span class="la-tok la-tok-dl">DELIMITER<br><em>:</em></span>
+                </div>
+              </div>
+
+              <!-- Token type cards -->
+              <div class="la-token-grid">
+                <div class="la-tok-card la-kw-card">
+                  <span class="la-tok-badge">KEYWORD</span>
+                  <span class="la-tok-ex"><span class="hl">def</span> <span class="hl">if</span> <span class="hl">for</span> <span class="hl">return</span> <span class="hl">class</span></span>
+                  <span class="la-tok-desc">Reserved — cannot be used as names</span>
+                </div>
+                <div class="la-tok-card la-id-card">
+                  <span class="la-tok-badge" style="background:rgba(34,197,94,.15);color:var(--id-col);border-color:rgba(34,197,94,.3)">IDENTIFIER</span>
+                  <span class="la-tok-ex"><span class="hli">greet</span> <span class="hli">total</span> <span class="hli">myVar</span></span>
+                  <span class="la-tok-desc">Variable, function, or class names</span>
+                </div>
+                <div class="la-tok-card la-num-card">
+                  <span class="la-tok-badge" style="background:rgba(245,158,11,.15);color:var(--num-col);border-color:rgba(245,158,11,.3)">NUMBER</span>
+                  <span class="la-tok-ex"><span class="hln">42</span> <span class="hln">3.14</span> <span class="hln">0xFF</span> <span class="hln">4j</span></span>
+                  <span class="la-tok-desc">Integer, float, hex, complex</span>
+                </div>
+                <div class="la-tok-card la-str-card">
+                  <span class="la-tok-badge" style="background:rgba(244,114,182,.15);color:var(--str-col);border-color:rgba(244,114,182,.3)">STRING</span>
+                  <span class="la-tok-ex"><span class="hls">"hi"</span> <span class="hls">'ok'</span> <span class="hls">f"x={x}"</span></span>
+                  <span class="la-tok-desc">Text enclosed in quotes</span>
+                </div>
+                <div class="la-tok-card la-op-card">
+                  <span class="la-tok-badge" style="background:rgba(167,139,250,.15);color:var(--op-col);border-color:rgba(167,139,250,.3)">OPERATOR</span>
+                  <span class="la-tok-ex"><span class="hlo">+</span> <span class="hlo">-</span> <span class="hlo">==</span> <span class="hlo">!=</span> <span class="hlo">&&</span> <span class="hlo">:=</span></span>
+                  <span class="la-tok-desc">Arithmetic, comparison, logical</span>
+                </div>
+                <div class="la-tok-card la-err-card">
+                  <span class="la-tok-badge" style="background:rgba(239,68,68,.15);color:var(--error);border-color:rgba(239,68,68,.3)">LEX ERROR</span>
+                  <span class="la-tok-ex"><span class="hlr">$</span> <span class="hlr">@</span> <span class="hlr">`</span> <span class="hlr">?</span></span>
+                  <span class="la-tok-desc">Unrecognised character — stops lexer</span>
+                </div>
+              </div>
+
+              <p style="margin-top:10px;font-size:12px;color:var(--muted)">⚠ Comments (<span class="hl">#</span> in Python, <span class="hl">//</span> and <span class="hl">/* */</span> in C++) are recognised by the lexer but <strong>excluded</strong> from the token output — they carry no semantic meaning.</p>
+
+            </div>
+          </div>
+
+        </div><!-- /section-lexer -->
+
+        <!-- Console — always visible -->
+        <div class="console-wrap">
+          <h4>🖥 Console Output</h4>
+          <div class="console" id="console">Lexical Analysis Simulator Ready…</div>
+        </div>
+
+      </div><!-- /right panel -->
+    </div><!-- /dashboard -->
+  </main>
+</div><!-- /app -->
+
+<!-- Main Compiler Logic -->
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -294,7 +294,29 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
         shutil.rmtree(git_dir, ignore_errors=True)
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    temp.rename(target)
+    # Belt-and-braces: on Windows, shutil.rmtree above can return before the
+    # directory is fully gone (open handles from indexers, antivirus). Retry
+    # with a tiny backoff before falling back to shutil.move, which copies
+    # contents file-by-file rather than relying on a single atomic rename.
+    import time
+    for attempt in range(5):
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+            time.sleep(0.1 * (attempt + 1))
+        try:
+            temp.rename(target)
+            break
+        except OSError:
+            if attempt == 4:
+                # Last resort: copy then remove. Slower but never fights
+                # Windows directory locking.
+                try:
+                    shutil.copytree(temp, target)
+                    shutil.rmtree(temp, ignore_errors=True)
+                except Exception as e:
+                    return "error", f"Could not place {target}: {e}"
+            else:
+                continue
     return "synced", None
 
 
