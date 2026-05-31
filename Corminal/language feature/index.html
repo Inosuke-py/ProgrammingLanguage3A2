@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Language Features</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>🧪 Language Features</h2>
+            <p class="loading-subtitle">
+                Hands-on demos for Duck Typing, Polymorphism,
+                Static vs Dynamic &amp; Strong vs Weak Typing,
+                Inheritance, and Encapsulation.
+            </p>
+            <p class="loading-status" id="loading-status">⏳ Loading…</p>
+        </div>
+    </div>
+
+    <!-- App Layout: Sidebar Left + Content Right -->
+    <div class="app-layout">
+
+    <!-- Sidebar Navigation (Left Side) -->
+    <nav class="sidebar-nav" id="tab-nav">
+        <div class="sidebar-header">
+            <span class="sidebar-title">🧪 Language Features</span>
+        </div>
+        <div class="sidebar-links">
+            <button class="tab-btn active" data-tab="duck">🦆 Duck Typing</button>
+            <button class="tab-btn" data-tab="polymorphism">🎭 Polymorphism</button>
+            <button class="tab-btn" data-tab="static-dynamic">⚖️ Static vs Dynamic</button>
+            <button class="tab-btn" data-tab="strong-weak">💪 Strong vs Weak</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+        <!-- ===== DUCK TYPING TAB ===== -->
+        <section id="tab-duck" class="tab-panel active">
+            <div class="panel-intro">
+                <h1>Duck Typing</h1>
+                <blockquote>
+                    "If it walks like a duck and quacks like a duck, it must be a duck."
+                    Python doesn't check an object's type; it checks whether the object
+                    has the methods or attributes it needs. The class hierarchy is irrelevant —
+                    <strong>behavior is everything</strong>.
+                </blockquote>
+                <div class="example-controls">
+                    <label>Pick an example:</label>
+                    <select class="example-select" data-target="duck">
+                        <option value="0">Basic duck typing</option>
+                        <option value="1">Protocol / structural typing</option>
+                        <option value="2">EAFP vs LBYL</option>
+                    </select>
+                    <button class="btn-reset" onclick="resetEditor('duck')">↺ Reset</button>
+                </div>
+            </div>
+
+            <div class="editor-output-grid">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">main.py</span>
+                        <button class="btn-run" onclick="runCode('duck')">▶ Run</button>
+                    </div>
+                    <textarea id="editor-duck"></textarea>
+                </div>
+                <div class="output-section">
+                    <div class="output-header">
+                        <span>Output</span>
+                        <button class="btn-clear" onclick="clearOutput('duck')">Clear</button>
+                    </div>
+                    <pre class="output-area" id="output-duck"></pre>
+                </div>
+            </div>
+
+            <div class="panel-tip">
+                <strong>Try this:</strong> add a new class with a <code>quack()</code> method
+                and pass an instance to <code>make_it_quack()</code>. Notice you didn't have
+                to inherit anything.
+            </div>
+        </section>
+
+        <!-- ===== POLYMORPHISM TAB ===== -->
+        <section id="tab-polymorphism" class="tab-panel">
+            <div class="panel-intro">
+                <h1>Polymorphism</h1>
+                <blockquote>
+                    One interface, many forms. The same method name produces different behavior
+                    depending on the object. Python supports it through method overriding,
+                    operator overloading (dunder methods), and generic functions.
+                </blockquote>
+                <div class="example-controls">
+                    <label>Pick an example:</label>
+                    <select class="example-select" data-target="polymorphism">
+                        <option value="0">Method overriding</option>
+                        <option value="1">Operator overloading (__add__)</option>
+                        <option value="2">Parametric (generic function)</option>
+                    </select>
+                    <button class="btn-reset" onclick="resetEditor('polymorphism')">↺ Reset</button>
+                </div>
+            </div>
+
+            <div class="editor-output-grid">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">main.py</span>
+                        <button class="btn-run" onclick="runCode('polymorphism')">▶ Run</button>
+                    </div>
+                    <textarea id="editor-polymorphism"></textarea>
+                </div>
+                <div class="output-section">
+                    <div class="output-header">
+                        <span>Output</span>
+                        <button class="btn-clear" onclick="clearOutput('polymorphism')">Clear</button>
+                    </div>
+                    <pre class="output-area" id="output-polymorphism"></pre>
+                </div>
+            </div>
+
+            <div class="panel-tip">
+                <strong>Polymorphism flavors here:</strong>
+                <ul>
+                    <li><em>Subtype</em> — overriding methods in subclasses</li>
+                    <li><em>Ad-hoc</em> — operator overloading via __add__, __eq__, etc.</li>
+                    <li><em>Parametric</em> — generic functions that work on many types</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ===== STATIC VS DYNAMIC TAB ===== -->
+        <section id="tab-static-dynamic" class="tab-panel">
+            <div class="panel-intro">
+                <h1>Static vs Dynamic Typing</h1>
+                <blockquote>
+                    In <strong>statically typed</strong> languages (Java, C++, Rust), types are
+                    checked at compile time — errors are caught early but the code is more verbose.
+                    In <strong>dynamically typed</strong> languages (Python, JavaScript), types are
+                    checked at runtime — flexible and fast to write, but type errors only surface
+                    when the offending line executes.
+                </blockquote>
+                <div class="example-controls">
+                    <label>Pick a scenario:</label>
+                    <select class="example-select" data-target="static-dynamic">
+                        <option value="0">Type mismatch</option>
+                        <option value="1">Late binding surprise</option>
+                        <option value="2">Type annotations (Python 3.10+)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="dual-editor-grid">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">🐍 Python (dynamic)</span>
+                        <button class="btn-run" onclick="runCode('static-dynamic')">▶ Run Python</button>
+                    </div>
+                    <textarea id="editor-static-dynamic"></textarea>
+                    <div class="output-header">
+                        <span>Python output</span>
+                        <button class="btn-clear" onclick="clearOutput('static-dynamic')">Clear</button>
+                    </div>
+                    <pre class="output-area" id="output-static-dynamic"></pre>
+                </div>
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">☕ Java (static) — read-only comparison</span>
+                        <button class="btn-run btn-disabled" onclick="runStaticCheck('static-dynamic')">compile check</button>
+                    </div>
+                    <textarea id="editor-static-dynamic-java"></textarea>
+                    <div class="output-header">
+                        <span>Static analyzer says…</span>
+                    </div>
+                    <pre class="output-area" id="output-static-dynamic-java"></pre>
+                </div>
+            </div>
+
+            <div class="panel-tip">
+                <strong>Notice:</strong> the same logical bug behaves differently. Python may
+                run for a while before it crashes; the Java compiler refuses to even build.
+                Trade-offs, not winners.
+            </div>
+        </section>
+
+        <!-- ===== STRONG VS WEAK TAB ===== -->
+        <section id="tab-strong-weak" class="tab-panel">
+            <div class="panel-intro">
+                <h1>Strong vs Weak Typing</h1>
+                <blockquote>
+                    A <strong>strongly typed</strong> language refuses to silently mix
+                    incompatible types — you must convert explicitly. A <strong>weakly
+                    typed</strong> language is happy to coerce values behind your back, sometimes with
+                    surprising results. Note this is independent of static vs dynamic:
+                    Python is dynamic + strong, JavaScript is dynamic + weak.
+                </blockquote>
+                <div class="example-controls">
+                    <label>Pick a scenario:</label>
+                    <select class="example-select" data-target="strong-weak">
+                        <option value="0">Adding int + string</option>
+                        <option value="1">Truthiness rules</option>
+                        <option value="2">Comparison coercion</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="dual-editor-grid">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">🐍 Python (dynamic + strong)</span>
+                        <button class="btn-run" onclick="runCode('strong-weak')">▶ Run Python</button>
+                    </div>
+                    <textarea id="editor-strong-weak"></textarea>
+                    <div class="output-header">
+                        <span>Python output</span>
+                        <button class="btn-clear" onclick="clearOutput('strong-weak')">Clear</button>
+                    </div>
+                    <pre class="output-area" id="output-strong-weak"></pre>
+                </div>
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="file-name">🟨 JavaScript (dynamic + weak)</span>
+                        <button class="btn-run btn-js" onclick="runJS('strong-weak')">▶ Run JS</button>
+                    </div>
+                    <textarea id="editor-strong-weak-js"></textarea>
+                    <div class="output-header">
+                        <span>JS output</span>
+                        <button class="btn-clear" onclick="clearOutput('strong-weak-js')">Clear</button>
+                    </div>
+                    <pre class="output-area" id="output-strong-weak-js"></pre>
+                </div>
+            </div>
+
+            <div class="panel-tip">
+                <strong>Same expression, different rules:</strong> Python raises a
+                <code>TypeError</code> for <code>1 + "2"</code>, JavaScript happily produces
+                <code>"12"</code>. Strength is about how much implicit coercion the language
+                allows.
+            </div>
+        </section>
+
+
+    </main>
+
+    </div><!-- end .app-layout -->
+
+    <!-- Footer -->
+    <footer class="footer">
+        Built with <a href="https://pyodide.org" target="_blank">Pyodide</a> + <a href="https://codemirror.net" target="_blank">CodeMirror</a>. Python actually runs in your browser via WebAssembly.
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

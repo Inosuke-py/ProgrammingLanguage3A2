@@ -1,0 +1,59 @@
+{
+  "id": "e92d0eac",
+  "phase": "generate_requested",
+  "pageUrl": "/",
+  "sourceFile": null,
+  "expectedVariants": 3,
+  "arrivedVariants": 0,
+  "visibleVariant": 0,
+  "paramValues": {},
+  "pendingEventSeq": 2,
+  "pendingEvent": {
+    "type": "generate",
+    "id": "e92d0eac",
+    "action": "bolder",
+    "freeformPrompt": "The FAQ should not be about any technical, it should be about the web app, non technical facts",
+    "count": 3,
+    "pageUrl": "/",
+    "element": {
+      "tagName": "section",
+      "id": null,
+      "classes": [
+        "py-24",
+        "px-6"
+      ],
+      "textContent": "FAQIs Kino free?+Yes. AI runs locally, no server costs to pass on.What files work?+PDF for now. More formats coming.Is it private?+Completely. AI runs via Ollama on your machine. Nothing uploaded.What do I need?+A modern browser and Ollama installed. 8GB+ RAM recommended.Multiplayer?+Battle Mode and Study Rooms are on the roadmap.",
+      "outerHTML": "<section class=\"py-24 px-6\" style=\"background: oklch(0.18 0.02 280);\"><div class=\"max-w-2xl mx-auto\"><h2 class=\"font-bold text-3xl tracking-tight mb-12 text-center\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">FAQ</h2><div style=\"border-bottom: 1px solid oklch(0.28 0.02 280);\"><button class=\"w-full flex items-center justify-between py-5 text-left cursor-pointer\"><span class=\"font-medium pr-4\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">Is Kino free?</span><span class=\"text-xl flex-shrink-0 transition-transform duration-200\" style=\"color: oklch(0.65 0.01 280); transform: none;\">+</span></button><div class=\"overflow-hidden transition-all duration-300 max-h-0\"><p class=\"text-[15px] leading-relaxed\" style=\"font-family: var(--font-space); color: oklch(0.65 0.01 280);\">Yes. AI runs locally, no server costs to pass on.</p></div></div><div style=\"border-bottom: 1px solid oklch(0.28 0.02 280);\"><button class=\"w-full flex items-center justify-between py-5 text-left cursor-pointer\"><span class=\"font-medium pr-4\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">What files work?</span><span class=\"text-xl flex-shrink-0 transition-transform duration-200\" style=\"color: oklch(0.65 0.01 280); transform: none;\">+</span></button><div class=\"overflow-hidden transition-all duration-300 max-h-0\"><p class=\"text-[15px] leading-relaxed\" style=\"font-family: var(--font-space); color: oklch(0.65 0.01 280);\">PDF for now. More formats coming.</p></div></div><div style=\"border-bottom: 1px solid oklch(0.28 0.02 280);\"><button class=\"w-full flex items-center justify-between py-5 text-left cursor-pointer\"><span class=\"font-medium pr-4\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">Is it private?</span><span class=\"text-xl flex-shrink-0 transition-transform duration-200\" style=\"color: oklch(0.65 0.01 280); transform: none;\">+</span></button><div class=\"overflow-hidden transition-all duration-300 max-h-0\"><p class=\"text-[15px] leading-relaxed\" style=\"font-family: var(--font-space); color: oklch(0.65 0.01 280);\">Completely. AI runs via Ollama on your machine. Nothing uploaded.</p></div></div><div style=\"border-bottom: 1px solid oklch(0.28 0.02 280);\"><button class=\"w-full flex items-center justify-between py-5 text-left cursor-pointer\"><span class=\"font-medium pr-4\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">What do I need?</span><span class=\"text-xl flex-shrink-0 transition-transform duration-200\" style=\"color: oklch(0.65 0.01 280); transform: none;\">+</span></button><div class=\"overflow-hidden transition-all duration-300 max-h-0\"><p class=\"text-[15px] leading-relaxed\" style=\"font-family: var(--font-space); color: oklch(0.65 0.01 280);\">A modern browser and Ollama installed. 8GB+ RAM recommended.</p></div></div><div style=\"border-bottom: 1px solid oklch(0.28 0.02 280);\"><button class=\"w-full flex items-center justify-between py-5 text-left cursor-pointer\"><span class=\"font-medium pr-4\" style=\"font-family: var(--font-space); color: oklch(0.92 0.01 280);\">Multiplayer?</span><span class=\"text-xl flex-shrink-0 transition-transform duration-200\" style=\"color: oklch(0.65 0.01 280); transform: none;\">+</span></button><div class=\"overflow-hidden transition-all duration-300 max-h-0\"><p class=\"text-[15px] leading-relaxed\" style=\"font-family: var(--font-space); color: oklch(0.65 0.01 280);\">Battle Mode and Study Rooms are on the roadmap.</p></div></div></div></section>",
+      "computedStyles": {
+        "font-family": "\"Space Grotesk\", sans-serif",
+        "font-size": "16px",
+        "font-weight": "400",
+        "line-height": "24px",
+        "color": "oklch(0.92 0.01 280)",
+        "background": "oklch(0.18 0.02 280) none repeat scroll 0% 0% / auto padding-box border-box",
+        "background-color": "oklch(0.18 0.02 280)",
+        "padding": "96px 24px",
+        "margin": "0px",
+        "display": "block",
+        "position": "static",
+        "gap": "normal",
+        "border-radius": "0px",
+        "box-shadow": "none"
+      },
+      "cssCustomProperties": {},
+      "parentContext": "<div class=\"min-h-screen relative\">",
+      "boundingRect": {
+        "width": 1905,
+        "height": 621
+      }
+    }
+  },
+  "deliveryLease": null,
+  "checkpointRevision": 1,
+  "activeOwner": "ec5a8b5f",
+  "sourceMarkers": {},
+  "fallbackMode": null,
+  "annotationArtifacts": [],
+  "diagnostics": [],
+  "updatedAt": "2026-05-24T04:26:45.358Z"
+}

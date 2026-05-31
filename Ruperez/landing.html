@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pyrism — See your code, one step at a time</title>
+  <meta name="description" content="An interactive programming-languages lab that runs Python, Ruby, C, C++, and JavaScript right in your browser. Edit, run, and trace real code to learn how language features actually work." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="landing.css" />
+</head>
+<body class="landing">
+
+  <!-- ============================ NAV ============================ -->
+  <nav class="lp-nav">
+    <a href="landing.html" class="lp-brand">
+      <span class="lp-brand-mark">🔮</span>
+      <span class="lp-brand-text">Pyrism</span>
+    </a>
+    <div class="lp-nav-links">
+      <a href="#features">Features</a>
+      <a href="#concepts">Concepts</a>
+      <a href="#engines">Engines</a>
+      <a href="docs.html">Docs</a>
+      <a href="index.html" class="lp-cta-small">Open Lab →</a>
+    </div>
+  </nav>
+
+  <!-- ============================ HERO ============================ -->
+  <header class="lp-hero">
+    <div class="lp-hero-inner">
+      <span class="lp-eyebrow">
+        <span class="lp-dot"></span> Interactive PL Lab — runs in your browser
+      </span>
+      <h1 class="lp-title">
+        See your <span class="lp-grad-text">code</span>,
+        <br/>one step at a time.
+      </h1>
+      <p class="lp-subtitle">
+        Pyrism splits a program's execution into the moves it actually makes —
+        calls, returns, prints, captures, yields — so language features stop being
+        magic. Edit, run, and trace real Python, Ruby, C, C++, or JavaScript
+        without leaving the page.
+      </p>
+      <div class="lp-cta-row">
+        <a href="index.html" class="lp-btn primary">▶ Launch the lab</a>
+        <a href="docs.html" class="lp-btn ghost">📖 Read the docs</a>
+      </div>
+      <div class="lp-engine-strip">
+        <span>Live engines:</span>
+        <span class="lp-pill">🐍 Python</span>
+        <span class="lp-pill">💎 Ruby</span>
+        <span class="lp-pill">📜 JavaScript</span>
+        <span class="lp-pill">🔧 C</span>
+        <span class="lp-pill">⚙️ C++</span>
+      </div>
+    </div>
+
+    <!-- Decorative editor preview -->
+    <div class="lp-preview" aria-hidden="true">
+      <div class="lp-preview-card">
+        <div class="lp-preview-header">
+          <span class="lp-dotrow"><i></i><i></i><i></i></span>
+          <span class="lp-preview-title">main.py · Duck Typing</span>
+          <span class="lp-preview-badge">▶ Run</span>
+        </div>
+        <pre class="lp-preview-code"><span class="kw">class</span> <span class="cls">Duck</span>:
+    <span class="kw">def</span> <span class="fn">quack</span>(self):
+        <span class="kw">return</span> <span class="str">"Quack!"</span>
+
+<span class="kw">def</span> <span class="fn">make_it_quack</span>(thing):
+    <span class="kw">return</span> thing.quack()
+
+<span class="fn">make_it_quack</span>(<span class="cls">Duck</span>())  <span class="cmt"># → "Quack!"</span></pre>
+        <div class="lp-preview-trace">
+          <div class="lp-trace-line"><span class="m call">▶</span> call <b>make_it_quack</b>(thing=Duck)</div>
+          <div class="lp-trace-line indent"><span class="m call">▶</span> call <b>Duck.quack</b>()</div>
+          <div class="lp-trace-line indent"><span class="m ret">◀</span> return <b>"Quack!"</b></div>
+          <div class="lp-trace-line"><span class="m ret">◀</span> return <b>"Quack!"</b></div>
+          <div class="lp-trace-line"><span class="m print">▷</span> prints <code>Quack!</code></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================ FEATURES ============================ -->
+  <section class="lp-section" id="features">
+    <h2 class="lp-h2">Built for <span class="lp-grad-text">understanding</span>, not just running.</h2>
+    <p class="lp-section-lead">Five things that make Pyrism different from a plain code playground.</p>
+
+    <div class="lp-grid lp-grid-3">
+      <article class="lp-card">
+        <div class="lp-card-icon">🔍</div>
+        <h3>Real step-by-step trace</h3>
+        <p>Every Python run can be replayed as an indented call tree of calls, returns, prints, and exceptions — driven by <code>sys.settrace</code>, not faked.</p>
+      </article>
+      <article class="lp-card">
+        <div class="lp-card-icon">🌐</div>
+        <h3>Five live engines</h3>
+        <p>Pyodide for Python. ruby.wasm for Ruby. JSCPP for C/C++. Your browser's own engine for JavaScript. Trace works across all of them.</p>
+      </article>
+      <article class="lp-card">
+        <div class="lp-card-icon">📚</div>
+        <h3>Curated examples</h3>
+        <p>Each concept ships with multiple worked examples — beginner all the way to gotchas — so you can pick the depth you need.</p>
+      </article>
+      <article class="lp-card">
+        <div class="lp-card-icon">💡</div>
+        <h3>Plain-language explanations</h3>
+        <p>Every example pairs runnable code with a short note explaining the <em>why</em> — the kind of thing a good professor says out loud.</p>
+      </article>
+      <article class="lp-card">
+        <div class="lp-card-icon">📱</div>
+        <h3>Phone-first responsive</h3>
+        <p>Sidebar collapses to a drawer, editor heights resize, tap targets stay reachable. Study on the bus, not just at a desk.</p>
+      </article>
+      <article class="lp-card">
+        <div class="lp-card-icon">🚀</div>
+        <h3>Zero install</h3>
+        <p>Static files. No backend, no account, no database. Drop the folder on any host — or run <code>python -m http.server</code> locally.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================ CONCEPTS ============================ -->
+  <section class="lp-section alt" id="concepts">
+    <h2 class="lp-h2">Concepts you can actually <span class="lp-grad-text">play with</span>.</h2>
+    <p class="lp-section-lead">Everything organized like a course outline. Every tab has multiple examples, switchable language, a Run, and a Trace.</p>
+
+    <div class="lp-concept-group">
+      <h4>Type Systems</h4>
+      <div class="lp-grid lp-grid-4">
+        <a href="index.html#tab-duck"     class="lp-tile"><span>🦆</span> Duck Typing</a>
+        <a href="index.html#tab-poly"     class="lp-tile"><span>🎭</span> Polymorphism</a>
+        <a href="index.html#tab-typing"   class="lp-tile"><span>⚖️</span> Static vs Dynamic</a>
+        <a href="index.html#tab-strength" class="lp-tile"><span>💪</span> Strong vs Weak</a>
+      </div>
+    </div>
+    <div class="lp-concept-group">
+      <h4>Object Model</h4>
+      <div class="lp-grid lp-grid-4">
+        <a href="index.html#tab-inherit" class="lp-tile"><span>🧬</span> Inheritance</a>
+        <a href="index.html#tab-encap"   class="lp-tile"><span>📦</span> Encapsulation</a>
+      </div>
+    </div>
+    <div class="lp-concept-group">
+      <h4>Function Mechanics</h4>
+      <div class="lp-grid lp-grid-4">
+        <a href="index.html#tab-cb"        class="lp-tile"><span>📞</span> Callbacks</a>
+        <a href="index.html#tab-closure"   class="lp-tile"><span>🔒</span> Closures</a>
+        <a href="index.html#tab-recursion" class="lp-tile"><span>🌀</span> Recursion</a>
+        <a href="index.html#tab-gen"       class="lp-tile"><span>⚙️</span> Generators</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ENGINES ============================ -->
+  <section class="lp-section" id="engines">
+    <h2 class="lp-h2">A real <span class="lp-grad-text">runtime</span> for every language.</h2>
+    <p class="lp-section-lead">Pick a language, click Run, see actual output — no server, no install.</p>
+
+    <div class="lp-engines">
+      <div class="lp-engine">
+        <div class="lp-engine-flag">🐍</div>
+        <div>
+          <h3>Python <span class="lp-tag live">live</span></h3>
+          <p>Pyodide — CPython on WebAssembly. Includes the standard library and powers the real Trace via <code>sys.settrace</code>.</p>
+        </div>
+      </div>
+      <div class="lp-engine">
+        <div class="lp-engine-flag">💎</div>
+        <div>
+          <h3>Ruby <span class="lp-tag live">live</span></h3>
+          <p>ruby.wasm — Ruby 3.3 compiled to WebAssembly. Lazy-loaded on first Run. Stdout captured via <code>StringIO</code>.</p>
+        </div>
+      </div>
+      <div class="lp-engine">
+        <div class="lp-engine-flag">📜</div>
+        <div>
+          <h3>JavaScript <span class="lp-tag live">live</span></h3>
+          <p>The browser's own engine. Always available, zero download. Captures <code>console.log</code> calls into the output panel.</p>
+        </div>
+      </div>
+      <div class="lp-engine">
+        <div class="lp-engine-flag">🔧</div>
+        <div>
+          <h3>C <span class="lp-tag live">live (subset)</span></h3>
+          <p>JSCPP — a JavaScript-based C interpreter. Handles stdio, recursion, basic data types. Loads on first C Run.</p>
+        </div>
+      </div>
+      <div class="lp-engine">
+        <div class="lp-engine-flag">⚙️</div>
+        <div>
+          <h3>C++ <span class="lp-tag live">live (subset)</span></h3>
+          <p>JSCPP — supports iostream, classes, basic templates, and STL containers. Modern features like concepts and coroutines fall back to a simulated output.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ HOW IT WORKS ============================ -->
+  <section class="lp-section alt" id="how">
+    <h2 class="lp-h2">How it <span class="lp-grad-text">works</span></h2>
+    <p class="lp-section-lead">Three clicks from "huh?" to "ohhh".</p>
+
+    <div class="lp-steps">
+      <div class="lp-step">
+        <div class="lp-step-num">1</div>
+        <h3>Pick a concept</h3>
+        <p>The sidebar groups topics by Type Systems, Object Model, and Function Mechanics. Pick one to load a panel with a worked example.</p>
+      </div>
+      <div class="lp-step">
+        <div class="lp-step-num">2</div>
+        <h3>Choose a language</h3>
+        <p>Each tab has a segmented switcher: 🐍 Python · 💎 Ruby · 🔧 C · ⚙️ C++ · 📜 JavaScript. Examples and editor mode swap instantly.</p>
+      </div>
+      <div class="lp-step">
+        <div class="lp-step-num">3</div>
+        <h3>Run or Trace</h3>
+        <p><b>Run</b> shows the output. <b>Trace</b> indents one level per call so you can watch the stack grow and unwind step by step.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FINAL CTA ============================ -->
+  <section class="lp-section lp-cta-final">
+    <div class="lp-cta-card">
+      <h2 class="lp-h2">Ready to look <span class="lp-grad-text">inside</span>?</h2>
+      <p>The lab is one click away. No sign-in. No install. Just code.</p>
+      <div class="lp-cta-row">
+        <a href="index.html" class="lp-btn primary big">▶ Launch the lab</a>
+        <a href="docs.html" class="lp-btn ghost big">Read the docs</a>
+      </div>
+      <p class="lp-tiny">First Python run downloads ~10 MB of Pyodide; cached afterwards.</p>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <div class="lp-brand">
+        <span class="lp-brand-mark">🔮</span>
+        <span class="lp-brand-text">Pyrism</span>
+      </div>
+      <div class="lp-footer-links">
+        <a href="index.html">Lab</a>
+        <a href="docs.html">Docs</a>
+        <a href="#features">Features</a>
+        <a href="#concepts">Concepts</a>
+        <a href="#engines">Engines</a>
+      </div>
+      <div class="lp-footer-tag">
+        Built with Pyodide · ruby.wasm · JSCPP · CodeMirror.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
