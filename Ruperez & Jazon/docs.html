@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Documentation — Pyrism</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="docs.css" />
+</head>
+<body class="docs-body">
+  <header class="app-header">
+    <div class="container">
+      <h1>📖 Pyrism — System Documentation</h1>
+      <p class="subtitle">
+        Everything you need to understand, run, and extend the app.
+      </p>
+      <p class="docs-link">
+        <a href="landing.html">🏠 Home</a> &nbsp;·&nbsp;
+        <a href="index.html">▶ Open the lab</a>
+      </p>
+    </div>
+  </header>
+
+  <main class="container docs">
+    <aside class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#objectives">Learning objectives</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#flow">Runtime flow</a></li>
+        <li><a href="#files">File-by-file reference</a></li>
+        <li><a href="#concepts">Concepts covered</a></li>
+        <li><a href="#engines">Live engines</a></li>
+        <li><a href="#run">How to run</a></li>
+        <li><a href="#extend">Extending the app</a></li>
+        <li><a href="#stack">Tech stack &amp; deps</a></li>
+        <li><a href="#limits">Limitations</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ol>
+    </aside>
+
+    <article class="docs-content">
+
+<section id="overview">
+<h2>1. Overview</h2>
+<p>
+  <strong>Pyrism</strong> is a single-page, client-only web application
+  that demonstrates seven core programming-language features through editable,
+  runnable Python examples:
+</p>
+<ul>
+  <li>🦆 Duck Typing</li>
+  <li>🎭 Polymorphism</li>
+  <li>⚖️ Static vs Dynamic Typing</li>
+  <li>💪 Strong vs Weak Typing</li>
+  <li>🧬 Inheritance</li>
+  <li>📦 Encapsulation</li>
+</ul>
+<p>
+  The app loads <strong>CPython compiled to WebAssembly</strong> (via
+  <a href="https://pyodide.org/" target="_blank" rel="noopener">Pyodide</a>) so
+  user code runs entirely in the browser — no server, no install, no
+  account. Static comparison languages (Java, JavaScript, C) are shown
+  read-only with a synthesized analyzer report so learners can compare how
+  the same logical bug surfaces in different language families.
+</p>
+</section>
+
+<section id="objectives">
+<h2>2. Learning objectives</h2>
+<p>After working through the lab, a student should be able to:</p>
+<ol>
+  <li>Distinguish duck typing from nominal subtype-based dispatch.</li>
+  <li>
+    Identify the three main polymorphism flavors (subtype, ad-hoc, parametric)
+    in working Python code.
+  </li>
+  <li>
+    Predict which type errors a statically typed compiler catches and which
+    only a dynamic runtime catches — and explain why.
+  </li>
+  <li>
+    Position a language on the static/dynamic and strong/weak axes
+    independently.
+  </li>
+  <li>
+    Use single, multi-level, and multiple inheritance with <code>super()</code>
+    and reason about Python's MRO.
+  </li>
+  <li>
+    Apply Python's encapsulation conventions (<code>_protected</code>,
+    <code>__private</code>, <code>@property</code>, <code>__slots__</code>,
+    frozen dataclasses) and recognize that they are conventions, not enforced
+    barriers.
+  </li>
+  <li>
+    Explain CPython's hybrid GC (reference counting + generational cyclic
+    collector) and use <code>gc</code> and <code>weakref</code> to inspect it.
+  </li>
+</ol>
+</section>
+
+<section id="architecture">
+<h2>3. Architecture</h2>
+<p>
+  The system is a static three-layer client app. There is no backend, no
+  database, no build step.
+</p>
+
+<pre class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                          BROWSER (any modern)                    │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Presentation layer                                        │  │
+│  │  • index.html  — tabs, panels, picker UI                   │  │
+│  │  • style.css   — dark theme + responsive grid              │  │
+│  │  • docs.html   — this document                             │  │
+│  └─────────────────────────┬──────────────────────────────────┘  │
+│                            │ DOM events (click, change, ⌘+Enter) │
+│  ┌─────────────────────────▼──────────────────────────────────┐  │
+│  │  Controller / data layer (JavaScript)                      │  │
+│  │  • examples.js — curated example snippets per concept      │  │
+│  │  • app.js      — tab routing, editor wiring, run handler   │  │
+│  │  • CodeMirror 5 — syntax-highlighted editors               │  │
+│  └─────────────────────────┬──────────────────────────────────┘  │
+│                            │ pyodide.runPython(source)           │
+│  ┌─────────────────────────▼──────────────────────────────────┐  │
+│  │  Execution layer                                           │  │
+│  │  • Pyodide  — CPython 3.12 compiled to WebAssembly         │  │
+│  │  • _run_user_code() — captures stdout/stderr, formats tb   │  │
+│  └────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+</pre>
+
+<p>Why this shape?</p>
+<ul>
+  <li>
+    <strong>Zero server</strong> means the lab can be hosted on a USB stick,
+    GitHub Pages, or any static file host — perfect for a classroom.
+  </li>
+  <li>
+    <strong>Real Python</strong> (not a sandboxed pseudo-interpreter) means
+    learners get authentic error messages, real <code>gc</code> behavior,
+    and access to the standard library.
+  </li>
+  <li>
+    <strong>Data-driven examples</strong>: every snippet lives in
+    <code>examples.js</code>, so adding or editing demos doesn't require
+    touching the UI code.
+  </li>
+</ul>
+</section>
+
+<section id="flow">
+<h2>4. Runtime flow</h2>
+<p>What happens from page load to a printed result:</p>
+<ol>
+  <li>
+    Browser fetches <code>index.html</code>, which pulls
+    <code>style.css</code>, CodeMirror, Pyodide, <code>examples.js</code>,
+    and <code>app.js</code> from the CDN/disk.
+  </li>
+  <li>
+    <code>app.js</code> calls <code>loadPyodide()</code> (≈10&nbsp;MB on
+    first run; cached afterwards). The status pill switches from
+    <em>“Booting…”</em> to <em>“Python ready”</em> when finished.
+  </li>
+  <li>
+    A small Python helper, <code>_run_user_code(src)</code>, is defined inside
+    the Pyodide interpreter. It redirects <code>sys.stdout</code> /
+    <code>sys.stderr</code>, <code>exec()</code>s the source string, and
+    returns the captured streams as a tuple.
+  </li>
+  <li>
+    For each tab, <code>app.js</code> creates a CodeMirror editor over the
+    corresponding <code>&lt;textarea&gt;</code> and pre-fills it with the first
+    example from <code>EXAMPLES.&lt;tab&gt;</code>.
+  </li>
+  <li>
+    User clicks <strong>▶ Run</strong> (or hits Ctrl/Cmd+Enter). The handler:
+    <ol type="a">
+      <li>reads the editor contents,</li>
+      <li>writes them into <code>pyodide.globals.__user_src</code>,</li>
+      <li>calls <code>_run_user_code(__user_src)</code>,</li>
+      <li>renders the returned <code>(stdout, stderr)</code> into the output
+        pane with a per-run timing badge.</li>
+    </ol>
+  </li>
+  <li>
+    Clicking <strong>🔍 Trace</strong> (or Shift+Ctrl/Cmd+Enter) runs
+    <code>_run_traced(__user_src)</code> instead. That helper installs a
+    <code>sys.settrace</code> hook that records every call, return, print
+    and exception inside the user's code (library internals are skipped).
+    The events come back as JSON and are rendered as an indented call tree
+    so you can see, line by line, <em>which function call produced which
+    output</em>.
+  </li>
+  <li>
+    For the comparison tabs (<em>Static vs Dynamic</em>, <em>Strong vs Weak</em>),
+    only the Python pane runs; the other-language pane is read-only and a
+    pre-written analyzer report is shown so the contrast is explicit.
+  </li>
+</ol>
+
+<pre class="diagram">
+User                CodeMirror          app.js              Pyodide (WASM)
+ │ click ▶ Run        │                  │                       │
+ │───────────────────▶│ getValue()       │                       │
+ │                    │─────────────────▶│ pyodide.globals.set   │
+ │                    │                  │──────────────────────▶│
+ │                    │                  │ runPython(_run_…)     │
+ │                    │                  │──────────────────────▶│
+ │                    │                  │   (exec inside py)    │
+ │                    │                  │◀──────────────────────│
+ │                    │                  │  (stdout, stderr)     │
+ │                    │ render output    │                       │
+ │◀───────────────────────────────────────                       │
+</pre>
+</section>
+
+<section id="files">
+<h2>5. File-by-file reference</h2>
+
+<h3><code>index.html</code></h3>
+<p>
+  Defines the page chrome and one <code>&lt;section class="panel"&gt;</code>
+  per concept. Each panel contains an explainer block, an example picker,
+  one or two CodeMirror-bound textareas, and an output <code>&lt;pre&gt;</code>.
+  Tabs are plain <code>&lt;button data-tab="..."&gt;</code> elements; the active
+  panel is toggled purely via CSS classes.
+</p>
+
+<h3><code>style.css</code></h3>
+<p>
+  Hand-written dark theme with CSS custom properties for colors. Layout uses
+  a 2-column CSS grid that collapses to a single column under 900&nbsp;px.
+  No frameworks, no preprocessor.
+</p>
+
+<h3><code>examples.js</code></h3>
+<p>
+  Exports a single <code>window.EXAMPLES</code> object with one array per tab:
+</p>
+<pre><code>EXAMPLES = {
+  duck:     [{ title, blurb, code }, …],   // single-language demos
+  poly:     [{ title, blurb, code }, …],
+  typing:   [{ title, blurb, python, java, staticReport }, …],
+  strength: [{ title, blurb, python, js,   report }, …],
+  inherit:  [{ title, blurb, code }, …],
+  encap:    [{ title, blurb, code }, …],
+  gc:       [{ title, blurb, code }, …],
+}</code></pre>
+<p>
+  Adding a new example is a matter of pushing one more object into the right
+  array. The picker dropdown is rebuilt from this data on page load.
+</p>
+
+<h3><code>app.js</code></h3>
+<p>The controller. It does five things:</p>
+<ol>
+  <li>boots Pyodide and exposes a status pill,</li>
+  <li>turns each <code>&lt;textarea&gt;</code> into a CodeMirror editor,</li>
+  <li>populates the example dropdowns and reacts to changes,</li>
+  <li>handles tab switching and reset/clear buttons,</li>
+  <li>runs Python via <code>_run_user_code()</code> and renders the captured
+    output (with a colorized stderr lane).</li>
+</ol>
+<p>
+  A global keyboard shortcut (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd>)
+  triggers Run on whichever tab is currently active.
+</p>
+
+<h3><code>docs.html</code> + <code>docs.css</code></h3>
+<p>This document. Pure static HTML, styled to match the app shell.</p>
+
+<h3><code>README.md</code></h3>
+<p>Quick-start summary intended for a Git repository's root view.</p>
+</section>
+
+<section id="concepts">
+<h2>6. Concepts covered</h2>
+
+<h3 id="c-duck">🦆 Duck Typing</h3>
+<p>
+  Python's dispatch is structural at the use-site: a call like
+  <code>thing.quack()</code> succeeds if <code>thing</code> has a
+  <code>quack</code> attribute callable with no args, regardless of its class.
+  Examples in the lab:
+</p>
+<ul>
+  <li>The classic <code>Duck</code>/<code>Person</code>/<code>Dog</code> demo.</li>
+  <li>File-like objects: anything with <code>.read()</code>.</li>
+  <li>EAFP idiom (try first, handle exceptions later).</li>
+  <li>Custom iterables that plug into <code>for</code> via <code>__iter__</code>.</li>
+</ul>
+
+<h3 id="c-poly">🎭 Polymorphism</h3>
+<p>
+  Same operation name, different behavior. The lab covers:
+</p>
+<ul>
+  <li><strong>Subtype</strong> via overridden methods on a <code>Shape</code> hierarchy.</li>
+  <li><strong>Ad-hoc</strong> via dunder operators on a <code>Money</code> class
+    (<code>__add__</code>, <code>__eq__</code>, <code>__repr__</code>).</li>
+  <li><strong>Parametric</strong> via a generic <code>smallest()</code> function.</li>
+  <li>A combined <code>render(scene)</code> example that relies on duck typing.</li>
+</ul>
+
+<h3 id="c-typing">⚖️ Static vs Dynamic Typing</h3>
+<p>
+  <em>When</em> are types checked? Statically typed languages check at compile
+  time; dynamic languages check at runtime. The lab shows the same logical
+  bug in Python (runs until the bad path executes) and in Java (compiler
+  refuses to build) plus a pre-rendered <code>javac</code>-style error report.
+</p>
+<p>The fourth scenario covers <strong>gradual typing</strong> — Python type
+hints + <code>mypy</code> as a way to bolt static checks onto a dynamic language.</p>
+
+<h3 id="c-strength">💪 Strong vs Weak Typing</h3>
+<p>
+  <em>How strict</em> is the language about mixing types? Side-by-side examples
+  contrast Python (strong: refuses <code>"5" + 3</code>) with JavaScript
+  (weak: gleefully coerces it to <code>"53"</code>; <code>"5" - 3</code> becomes
+  <code>2</code>). A third example points out that strength is independent
+  from static/dynamic — classic C is weak <em>and</em> static.
+</p>
+
+<h3 id="c-inherit">🧬 Inheritance</h3>
+<p>Five examples, in order of complexity:</p>
+<ol>
+  <li>Single inheritance with <code>super()</code>.</li>
+  <li>Multi-level chains (<code>Vehicle → Car → ElectricCar</code>) and
+    <code>__mro__</code>.</li>
+  <li>Multiple inheritance and Python's C3 linearization.</li>
+  <li>Abstract base classes with <code>abc.abstractmethod</code>.</li>
+  <li>Composition vs inheritance (favoring DI over hierarchy).</li>
+</ol>
+
+<h3 id="c-encap">📦 Encapsulation</h3>
+<p>Four examples:</p>
+<ol>
+  <li>Naming conventions: <code>public</code>, <code>_protected</code>,
+    <code>__private</code> (with name mangling demonstrated).</li>
+  <li><code>@property</code> as a way to add validation without breaking the
+    public API.</li>
+  <li><code>__slots__</code> and <code>@dataclass(frozen=True)</code> for
+    locked-down, low-overhead value types.</li>
+  <li>Why it matters: a <code>Stack</code> whose invariants break the moment
+    someone reaches into <code>_items</code> directly.</li>
+</ol>
+
+<section id="engines">
+<h2>7. Live engines</h2>
+<p>
+  Pyrism executes user code right inside the browser using whichever engine
+  fits the chosen language. Every engine except Python loads on first use,
+  so the initial page weight stays small.
+</p>
+
+<table class="deps">
+  <thead>
+    <tr><th>Language</th><th>Engine</th><th>How it loads</th><th>What it can run</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🐍 Python</td>
+      <td><a href="https://pyodide.org/" target="_blank" rel="noopener">Pyodide</a> — CPython on WebAssembly</td>
+      <td>Eagerly at page load (~10 MB, cached after first visit)</td>
+      <td>Full Python 3.12 incl. stdlib. Powers the <strong>real</strong> Trace via <code>sys.settrace</code>.</td>
+    </tr>
+    <tr>
+      <td>📜 JavaScript</td>
+      <td>The browser's own JS engine</td>
+      <td>Already there — zero download</td>
+      <td>Modern ES2020+. Code runs through <code>new Function(source)</code> with a captured <code>console.log</code>.</td>
+    </tr>
+    <tr>
+      <td>💎 Ruby</td>
+      <td><a href="https://github.com/ruby/ruby.wasm" target="_blank" rel="noopener">ruby.wasm</a> — CRuby compiled to WebAssembly</td>
+      <td>Lazy on first Ruby Run (~10 MB, cached afterwards)</td>
+      <td>Full Ruby 3.3 incl. stdlib. Stdout / stderr captured via <code>StringIO</code>.</td>
+    </tr>
+    <tr>
+      <td>🔧 C / ⚙️ C++</td>
+      <td><a href="https://github.com/felixhao28/JSCPP" target="_blank" rel="noopener">JSCPP</a> — JavaScript-based C/C++ interpreter</td>
+      <td>Lazy on first C/C++ Run (~150 KB)</td>
+      <td>Useful subset: <code>stdio</code>, <code>iostream</code>, classes, recursion, basic STL containers and templates. <strong>Not</strong> C++20 concepts, coroutines, ranges, <code>std::function</code>, or heavy template metaprogramming.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  Two output banners tell you what's actually happening:
+</p>
+<ul>
+  <li>
+    <strong style="color: var(--ok);">Live execution</strong> — the code ran in
+    a real engine, the output is real.
+  </li>
+  <li>
+    <strong style="color: var(--accent-3);">Simulated output</strong> — the
+    output below was hand-written; no engine ran the code.
+  </li>
+</ul>
+
+<p>
+  If a C/C++ example uses a feature JSCPP can't handle, the live runner catches
+  the failure and falls back to the simulated output, with a clear yellow
+  "Live run failed — falling back" banner so you know what happened.
+</p>
+
+<h3>Trace support</h3>
+<p>
+  Trace works for every language but in two flavors:
+</p>
+<ul>
+  <li><strong>Python</strong> — a <em>real</em> trace built from
+    <code>sys.settrace</code>. Every call, return, print, and exception your
+    code makes is recorded with the actual argument and return values.</li>
+  <li><strong>Ruby / C / C++ / JavaScript</strong> — a <em>simulated</em>
+    trace. If the example author wrote a hand-crafted <code>trace</code> array
+    (Duck Typing JS, Recursion Ruby and JS), it's rendered in full. Otherwise
+    the renderer derives a print-by-print sequence from the example's expected
+    output, so you still see step-by-step what the code would print.</li>
+</ul>
+
+<h3>Why no Java?</h3>
+<p>
+  There's no good free, drop-in JVM for the browser. CheerpJ is commercial,
+  DoppioVM is essentially abandoned. Adding live Java would require a small
+  backend that runs <code>javac</code> + <code>java</code> server-side — which
+  would break the "static site, runs anywhere" promise. Ruby fills the
+  high-level OO slot via ruby.wasm, with the bonus that duck typing is
+  literally a Ruby idiom.
+</p>
+</section>
+
+<section id="run">
+<h2>8. How to run</h2>
+<p>
+  The site is a folder of static files. There's no build step.
+</p>
+
+<h3>Option A — open the file directly</h3>
+<p>
+  Double-click <code>index.html</code>. This works in modern browsers, but
+  Pyodide loads more reliably over HTTP than via <code>file://</code>.
+</p>
+
+<h3>Option B — serve locally (recommended)</h3>
+<pre><code>:: from inside interactive-app\
+python -m http.server 8000</code></pre>
+<p>Then visit <a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a>.</p>
+
+<h3>Option C — host on any static site service</h3>
+<p>GitHub Pages, Netlify, Vercel, S3, Cloudflare Pages — drop the folder in.</p>
+
+<h3>First-load cost</h3>
+<p>
+  The first run downloads the Pyodide runtime (~10&nbsp;MB compressed). The
+  browser caches it, so subsequent visits start in well under a second.
+</p>
+</section>
+
+<section id="extend">
+<h2>9. Extending the app</h2>
+
+<h3>Adding a new example to an existing tab</h3>
+<p>Open <code>examples.js</code> and append an object to the right array.</p>
+<pre><code>// Single-language tab (duck, poly, inherit, encap, gc):
+EXAMPLES.duck.push({
+  title: "My new demo",
+  blurb: "Short one-line teaser.",
+  code: `print("hello")`
+});
+
+// Comparison tab (typing):
+EXAMPLES.typing.push({
+  title: "...",
+  blurb: "...",
+  python: `...`,
+  java:   `...`,
+  staticReport: `...`
+});
+
+// Comparison tab (strength):
+EXAMPLES.strength.push({
+  title: "...",
+  blurb: "...",
+  python: `...`,
+  js:     `...`,
+  report: `...`
+});</code></pre>
+<p>The dropdown rebuilds itself on the next page load — no UI code changes needed.</p>
+
+<h3>Adding a brand-new concept tab</h3>
+<ol>
+  <li>Add a tab button in <code>index.html</code> (<code>&lt;button class="tab" data-tab="myconcept"&gt;</code>).</li>
+  <li>Add a matching <code>&lt;section class="panel" id="tab-myconcept"&gt;</code>.</li>
+  <li>Add an <code>EXAMPLES.myconcept</code> array in <code>examples.js</code>.</li>
+  <li>In <code>app.js</code>, register the editor, populate the dropdown, hook up the
+    Run button branch, and add a loader function.</li>
+</ol>
+
+<h3>Changing the look</h3>
+<p>
+  All colors live as CSS variables on <code>:root</code> in
+  <code>style.css</code>. Swap them for a light theme by overriding inside a
+  <code>@media (prefers-color-scheme: light)</code> block.
+</p>
+</section>
+
+<section id="stack">
+<h2>10. Tech stack &amp; dependencies</h2>
+<table class="deps">
+  <thead><tr><th>Layer</th><th>Tool</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Markup</td><td>Hand-written HTML5</td><td>No framework needed for a 7-tab UI.</td></tr>
+    <tr><td>Styling</td><td>Plain CSS + custom properties</td><td>Easy to tweak; no build pipeline.</td></tr>
+    <tr><td>Editor</td><td>CodeMirror 5</td><td>Tiny, mature, supports Python/Java/JS modes.</td></tr>
+    <tr><td>Runtime</td><td>Pyodide 0.26</td><td>Real CPython on WebAssembly.</td></tr>
+    <tr><td>Hosting</td><td>Any static host</td><td>The whole app is files.</td></tr>
+  </tbody>
+</table>
+<p>Everything except Pyodide and CodeMirror is hand-written. CodeMirror and Pyodide are loaded from CDNs — switch to local copies for fully offline use.</p>
+</section>
+
+<section id="limits">
+<h2>11. Limitations</h2>
+<ul>
+  <li>
+    Pyodide cannot do real OS I/O (no file system access by default, no
+    sockets), but every example here is purely computational.
+  </li>
+  <li>
+    Long-running loops will block the browser tab — avoid <code>while True:</code>
+    without a <code>break</code>.
+  </li>
+  <li>
+    The Java and JavaScript panes are <strong>not executed</strong>. Their
+    output is a hand-written analyzer report, intentional for pedagogical
+    clarity. Wiring up a real JavaScript runtime is trivial; Java would
+    require a remote compilation service.
+  </li>
+  <li>
+    The first page load needs ~10&nbsp;MB of bandwidth to fetch the Pyodide
+    image. After that everything is cached.
+  </li>
+</ul>
+</section>
+
+<section id="faq">
+<h2>12. FAQ</h2>
+
+<h3>Is this safe to use offline?</h3>
+<p>Once cached, yes. To make it work offline from the very first load, download
+the Pyodide and CodeMirror assets locally and update the <code>&lt;script&gt;</code>
+URLs in <code>index.html</code>.</p>
+
+<h3>Can I add Ruby / Lua / Rust examples?</h3>
+<p>For Ruby and Lua, look at <a href="https://wapm.io/" target="_blank" rel="noopener">WebAssembly ports</a>.
+Rust and C/C++ won't run in-browser without a compilation server. The current
+read-only "comparison pane" pattern is the easiest way to add them.</p>
+
+<h3>Why not Brython / Skulpt instead of Pyodide?</h3>
+<p>Both are valid, but neither implements <code>gc</code>, <code>weakref</code>,
+or accurate refcount semantics — which would defeat the GC tab.</p>
+
+<h3>Is user code sandboxed?</h3>
+<p>Yes. Pyodide runs inside the browser's WebAssembly sandbox; it cannot reach
+your file system or network unless you explicitly grant it access via JS interop.</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="container">
+    <p>Documentation rendered as plain HTML — no JS required.</p>
+  </footer>
+</body>
+</html>

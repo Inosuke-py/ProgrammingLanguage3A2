@@ -281,7 +281,13 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
     """
     temp = target.with_name(f".{target.name}.syncing")
     if temp.exists():
-        shutil.rmtree(temp, ignore_errors=True)
+        # Use the hardened removal for the temp too — leftover temps from a
+        # previous failed run are subject to the same Windows lock issues
+        # as the target directories themselves.
+        try:
+            _force_remove(temp)
+        except OSError as e:
+            return "error", f"Could not clear stale temp dir {temp}: {e}"
 
     args = ["clone", "--depth", "1"]
     if p.branch:
@@ -290,13 +296,13 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
     try:
         run_git(args)
     except RuntimeError as e:
-        shutil.rmtree(temp, ignore_errors=True)
+        _force_remove(temp)
         return "error", str(e)
 
     # Strip .git so the aggregate stays single-rooted on github.com.
     git_dir = temp / ".git"
     if git_dir.exists():
-        shutil.rmtree(git_dir, ignore_errors=True)
+        _force_remove(git_dir)
 
     target.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -304,6 +310,50 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
     except OSError as e:
         return "error", f"Could not place {target}: {e}"
     return "synced", None
+
+
+def _force_remove(path: Path) -> None:
+    """Forcefully remove a file or directory, with retries and a Windows
+    fallback. Used everywhere shutil.rmtree might race with locked handles.
+    """
+    import time
+    import os
+
+    if not path.exists():
+        return
+
+    def _on_error(func, p, exc_info):  # noqa: ARG001
+        try:
+            os.chmod(p, 0o777)
+            func(p)
+        except Exception:
+            pass
+
+    for attempt in range(6):
+        try:
+            if path.is_dir():
+                shutil.rmtree(path, onerror=_on_error)
+            else:
+                path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        if not path.exists():
+            return
+        time.sleep(0.2 * (attempt + 1))
+
+    if os.name == "nt" and path.is_dir():
+        subprocess.run(
+            ["cmd.exe", "/c", "rmdir", "/s", "/q", str(path)],
+            capture_output=True,
+            text=True,
+        )
+        time.sleep(0.3)
+
+    if path.exists():
+        raise OSError(
+            f"could not remove {path} after multiple attempts. "
+            "Close any program that has it open (file explorer, VS Code, antivirus scan)."
+        )
 
 
 def _replace_dir(src: Path, dst: Path) -> None:

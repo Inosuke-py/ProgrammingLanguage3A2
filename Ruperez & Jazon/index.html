@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pyrism — See your Python, one step at a time</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <!-- Pyodide -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ============================ SIDEBAR ============================ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">🔮</div>
+        <div class="brand-text">
+          <div class="brand-name">Pyrism</div>
+          <div class="brand-sub">See your Python, one step at a time</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Type Systems</div>
+      <button class="tab active" data-tab="duck"     role="tab"><span class="tab-icon">🦆</span> Duck Typing</button>
+      <button class="tab"        data-tab="poly"     role="tab"><span class="tab-icon">🎭</span> Polymorphism</button>
+      <button class="tab"        data-tab="typing"   role="tab"><span class="tab-icon">⚖️</span> Static vs Dynamic</button>
+      <button class="tab"        data-tab="strength" role="tab"><span class="tab-icon">💪</span> Strong vs Weak</button>
+
+      <div class="nav-section-title">Object Model</div>
+      <button class="tab" data-tab="inherit" role="tab"><span class="tab-icon">🧬</span> Inheritance</button>
+      <button class="tab" data-tab="encap"   role="tab"><span class="tab-icon">📦</span> Encapsulation</button>
+
+      <div class="nav-section-title">Function Mechanics</div>
+      <button class="tab" data-tab="cb"        role="tab"><span class="tab-icon">📞</span> Callbacks</button>
+      <button class="tab" data-tab="closure"   role="tab"><span class="tab-icon">🔒</span> Closures</button>
+      <button class="tab" data-tab="recursion" role="tab"><span class="tab-icon">🌀</span> Recursion</button>
+      <button class="tab" data-tab="gen"       role="tab"><span class="tab-icon">⚙️</span> Generators</button>
+
+      <div class="sidebar-footer">
+        <a href="landing.html">🏠 Home</a><br/>
+        <a href="docs.html">📖 System About</a>
+      </div>
+    </aside>
+
+    <!-- ============================ TOP BAR ============================ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <span class="topbar-brand">Pyrism</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current" id="topbar-crumb">Duck Typing</span>
+      </div>
+      <div class="topbar-right">
+        <span class="kbd-hint"><kbd>⌘</kbd>+<kbd>↵</kbd> run · <kbd>⇧</kbd>+<kbd>⌘</kbd>+<kbd>↵</kbd> trace</span>
+        <div id="pyodide-status" class="status loading">
+          <span class="dot"></span> <span class="status-text">Booting Python…</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- backdrop for mobile drawer -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- ============================ MAIN ============================ -->
+    <main class="main">
+
+      <!-- DUCK TYPING -->
+      <section class="panel active" id="tab-duck" data-title="Duck Typing">
+        <div class="explainer">
+          <h2>🦆 Duck Typing <span class="h2-chip">Type Systems</span></h2>
+          <p>
+            “If it walks like a duck and quacks like a duck, it must be a duck.”
+            Python doesn't check an object's <em>type</em>; it checks whether the object
+            has the methods or attributes it needs. The class hierarchy is irrelevant —
+            behavior is everything.
+          </p>
+          <div class="example-picker">
+            <label for="duck-examples">Example</label>
+            <select id="duck-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="duck">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="duck"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="duck">▶ Run</button>
+                <button class="btn trace" data-trace="duck">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="duck-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="duck">Clear</button>
+            </div>
+            <pre id="duck-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Try this:</strong> add a new class with a <code>quack()</code> method
+          and pass an instance to <code>make_it_quack()</code>. Notice you didn't have
+          to inherit anything.
+        </div>
+      </section>
+
+      <!-- POLYMORPHISM -->
+      <section class="panel" id="tab-poly" data-title="Polymorphism">
+        <div class="explainer">
+          <h2>🎭 Polymorphism <span class="h2-chip">Type Systems</span></h2>
+          <p>
+            One interface, many forms. The same method name produces different behavior
+            depending on the object. Python supports it through method overriding,
+            operator overloading (dunder methods), and generic functions.
+          </p>
+          <div class="example-picker">
+            <label for="poly-examples">Example</label>
+            <select id="poly-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="poly">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="poly"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="poly">▶ Run</button>
+                <button class="btn trace" data-trace="poly">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="poly-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="poly">Clear</button>
+            </div>
+            <pre id="poly-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Polymorphism flavors:</strong>
+          <ul>
+            <li><b>Subtype</b> — overriding methods in subclasses</li>
+            <li><b>Ad-hoc</b> — operator overloading via <code>__add__</code>, <code>__eq__</code>, etc.</li>
+            <li><b>Parametric</b> — generic functions that work on many types</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- STATIC VS DYNAMIC -->
+      <section class="panel" id="tab-typing" data-title="Static vs Dynamic Typing">
+        <div class="explainer">
+          <h2>⚖️ Static vs Dynamic Typing <span class="h2-chip">Type Systems</span></h2>
+          <p>
+            In <strong>statically</strong> typed languages (Java, C++, Rust), types are
+            checked at compile time — errors are caught early but the code is more verbose.
+            In <strong>dynamically</strong> typed languages (Python, JavaScript), types are
+            checked at runtime — flexible and fast to write, but type errors only surface
+            when the offending line executes.
+          </p>
+          <div class="example-picker">
+            <label for="typing-examples">Scenario</label>
+            <select id="typing-examples"></select>
+          </div>
+        </div>
+
+        <div class="compare">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>🐍 Python (dynamic)</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="typing">▶ Run Python</button>
+                <button class="btn trace" data-trace="typing">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="typing-py-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Python output</span>
+              <button class="btn ghost" data-clear="typing">Clear</button>
+            </div>
+            <pre id="typing-output" class="output"></pre>
+          </div>
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>☕ Java (static) — read-only</span>
+              <span class="badge" id="typing-static-badge">compile check</span>
+            </div>
+            <textarea id="typing-java-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Static analyzer says…</span>
+            </div>
+            <pre id="typing-static-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Notice:</strong> the same logical bug behaves differently. Python may
+          run for a while before it crashes; the Java compiler refuses to even build.
+          Trade-offs, not winners.
+        </div>
+      </section>
+
+      <!-- STRONG VS WEAK -->
+      <section class="panel" id="tab-strength" data-title="Strong vs Weak Typing">
+        <div class="explainer">
+          <h2>💪 Strong vs Weak Typing <span class="h2-chip">Type Systems</span></h2>
+          <p>
+            A separate axis from static/dynamic. <strong>Strong</strong> typing means the
+            language refuses to silently mix types. <strong>Weak</strong> typing means
+            the language will coerce values to make the operation work, sometimes with
+            surprising results.
+          </p>
+          <div class="example-picker">
+            <label for="strength-examples">Scenario</label>
+            <select id="strength-examples"></select>
+          </div>
+        </div>
+
+        <div class="compare">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>🐍 Python (strong)</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="strength">▶ Run Python</button>
+                <button class="btn trace" data-trace="strength">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="strength-py-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Python output</span>
+              <button class="btn ghost" data-clear="strength">Clear</button>
+            </div>
+            <pre id="strength-output" class="output"></pre>
+          </div>
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>📜 JavaScript (weak) — read-only</span>
+              <span class="badge" id="strength-badge">would output</span>
+            </div>
+            <textarea id="strength-js-code"></textarea>
+            <div class="pane-header subheader">
+              <span>What JS would print</span>
+            </div>
+            <pre id="strength-js-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Mental model:</strong> <em>strength</em> is about strictness;
+          <em>static/dynamic</em> is about timing. They're independent.
+        </div>
+      </section>
+
+      <!-- INHERITANCE -->
+      <section class="panel" id="tab-inherit" data-title="Inheritance">
+        <div class="explainer">
+          <h2>🧬 Inheritance <span class="h2-chip">Object Model</span></h2>
+          <p>
+            A class can derive from one or more parents, reusing and extending their
+            behavior. Python supports single, multi-level, and multiple inheritance,
+            plus abstract base classes that force subclasses to implement specific methods.
+          </p>
+          <div class="example-picker">
+            <label for="inherit-examples">Example</label>
+            <select id="inherit-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="inherit">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="inherit"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="inherit">▶ Run</button>
+                <button class="btn trace" data-trace="inherit">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="inherit-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="inherit">Clear</button>
+            </div>
+            <pre id="inherit-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Rule of thumb:</strong> prefer composition over inheritance.
+          Inheritance creates tight coupling; composition keeps your code flexible.
+        </div>
+      </section>
+
+      <!-- ENCAPSULATION -->
+      <section class="panel" id="tab-encap" data-title="Encapsulation">
+        <div class="explainer">
+          <h2>📦 Encapsulation <span class="h2-chip">Object Model</span></h2>
+          <p>
+            Bundling data and the methods that operate on it inside a class, while hiding
+            internal details. Python relies on naming conventions
+            (<code>_protected</code>, <code>__private</code>) and properties rather than
+            hard access modifiers.
+          </p>
+          <div class="example-picker">
+            <label for="encap-examples">Example</label>
+            <select id="encap-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="encap">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="encap"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="encap">▶ Run</button>
+                <button class="btn trace" data-trace="encap">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="encap-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="encap">Clear</button>
+            </div>
+            <pre id="encap-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>“We're all consenting adults here.”</strong> Python doesn't physically
+          prevent you from touching <code>_private</code> data — it trusts you to respect
+          the contract.
+        </div>
+      </section>
+
+      <!-- CALLBACKS -->
+      <section class="panel" id="tab-cb" data-title="Callback Function Simulator">
+        <div class="explainer">
+          <h2>📞 Callback Function Simulator <span class="h2-chip">Function Mechanics</span></h2>
+          <p>
+            A <strong>callback</strong> is a function passed as an argument so another
+            piece of code can call it later. Run any example with <strong>🔍 Trace</strong>
+            to watch the outer function reach into your callback step by step.
+          </p>
+          <div class="example-picker">
+            <label for="cb-examples">Example</label>
+            <select id="cb-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="cb">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="cb"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="cb">▶ Run</button>
+                <button class="btn trace" data-trace="cb">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="cb-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="cb">Clear</button>
+            </div>
+            <pre id="cb-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Trace tip:</strong> each <code>▶ call</code> for the outer function is
+          followed by a nested <code>▶ call</code> into the callback. That nesting is the
+          “one function calls another later” pattern made visible.
+        </div>
+      </section>
+
+      <!-- CLOSURES -->
+      <section class="panel" id="tab-closure" data-title="Closure Visualizer">
+        <div class="explainer">
+          <h2>🔒 Closure Visualizer <span class="h2-chip">Function Mechanics</span></h2>
+          <p>
+            A <strong>closure</strong> is a function plus the variables it captured from
+            the scope it was defined in. The captured cell lives on even after the outer
+            function has returned.
+          </p>
+          <div class="example-picker">
+            <label for="closure-examples">Example</label>
+            <select id="closure-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="closure">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="closure"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="closure">▶ Run</button>
+                <button class="btn trace" data-trace="closure">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="closure-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="closure">Clear</button>
+            </div>
+            <pre id="closure-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Inspect the captures:</strong> a Python function exposes its closed-over
+          variables on <code>fn.__closure__</code>. The first example prints the actual
+          captured cells.
+        </div>
+      </section>
+
+      <!-- RECURSION -->
+      <section class="panel" id="tab-recursion" data-title="Recursive Function Simulator">
+        <div class="explainer">
+          <h2>🌀 Recursive Function Simulator <span class="h2-chip">Function Mechanics</span></h2>
+          <p>
+            Each recursive call pushes a new frame onto the call stack. The
+            <strong>🔍 Trace</strong> view literally indents one level per call, so the
+            stack growing and shrinking becomes visual.
+          </p>
+          <div class="example-picker">
+            <label for="recursion-examples">Example</label>
+            <select id="recursion-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="recursion">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="recursion"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="recursion">▶ Run</button>
+                <button class="btn trace" data-trace="recursion">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="recursion-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="recursion">Clear</button>
+            </div>
+            <pre id="recursion-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Read the trace top-to-bottom:</strong> each <code>▶ call</code> with
+          a smaller argument is the recursion descending; each <code>◀ return</code> is
+          the stack unwinding with a result.
+        </div>
+      </section>
+
+      <!-- GENERATORS -->
+      <section class="panel" id="tab-gen" data-title="Generator Function Simulator">
+        <div class="explainer">
+          <h2>⚙️ Generator Function Simulator <span class="h2-chip">Function Mechanics</span></h2>
+          <p>
+            A <strong>generator</strong> is a function with one or more <code>yield</code>
+            statements. Calling it doesn't run the body — it returns a generator object.
+            Each <code>next()</code> resumes the function until the next <code>yield</code>.
+          </p>
+          <div class="example-picker">
+            <label for="gen-examples">Example</label>
+            <select id="gen-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="gen">↺ Reset</button>
+          </div>
+          <div class="lang-picker" data-lang-tab="gen"></div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="gen">▶ Run</button>
+                <button class="btn trace" data-trace="gen">🔍 Trace</button>
+              </span>
+            </div>
+            <textarea id="gen-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Output</span>
+              <button class="btn ghost" data-clear="gen">Clear</button>
+            </div>
+            <pre id="gen-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Each <code>▶ call</code> is a resume:</strong> trace the first example
+          to see <code>countdown</code> entered <em>once</em>, then re-entered each time
+          <code>next()</code> is invoked, picking up right after the previous
+          <code>yield</code>.
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        Built with Pyodide + CodeMirror. Python actually runs in your browser via WebAssembly.
+        &nbsp;·&nbsp; <a href="docs.html">System documentation</a>
+      </footer>
+    </main>
+  </div>
+
+  <script src="examples.js"></script>
+  <script src="lang_examples.js"></script>
+  <!-- JSCPP — in-browser C/C++ interpreter (lazy-loaded on first C/C++ Run) -->
+  <script src="app.js"></script>
+</body>
+</html>
