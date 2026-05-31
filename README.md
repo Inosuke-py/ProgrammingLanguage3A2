@@ -1,7 +1,7 @@
 # Programming Language 3A2 Section Projects
 
-Compiled on 2026-06-01 07:15.
-3 of 3 pairs have a repository linked.
+Compiled on 2026-06-01 07:38.
+4 of 4 pairs have a repository linked.
 
 Each pair has its own folder. Folders are plain snapshots of the team's
 repository at sync time, no nested git history.
@@ -16,6 +16,10 @@ repository at sync time, no nested git history.
 ### [Corminal & Reyes](./Corminal & Reyes/)
 
 - Source: [https://github.com/mcorminal-wq/Language_Feature_Corminal](https://github.com/mcorminal-wq/Language_Feature_Corminal)
+
+### [Quima & Etrata](./Quima & Etrata/)
+
+- Source: [https://github.com/Kimreighn/GC-Simulator](https://github.com/Kimreighn/GC-Simulator)
 
 ### [Ruperez & Jazon](./Ruperez & Jazon/)
 

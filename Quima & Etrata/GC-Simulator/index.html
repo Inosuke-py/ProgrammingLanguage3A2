@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GC Simulator - Memory Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>Garbage Collection Simulator</h1>
+            <p>Memory Management</p>
+        </header>
+
+        <section class="dashboard">
+
+            <div class="card">
+                <h2>Total Memory</h2>
+                <p id="totalMemory">100 MB</p>
+            </div>
+
+            <div class="card">
+                <h2>Used Memory</h2>
+                <p id="usedMemory">0 MB</p>
+            </div>
+
+            <div class="card">
+                <h2>Free Memory</h2>
+                <p id="freeMemory">100 MB</p>
+            </div>
+
+        </section>
+
+        <section class="controls">
+
+            <input type="text" id="objectName" placeholder="Object Name">
+
+            <input type="number" id="objectSize" placeholder="Memory Size (MB)">
+
+            <select id="gcMode">
+                <option value="explicit">Explicit GC</option>
+                <option value="implicit">Implicit GC</option>
+            </select>
+
+            <button onclick="createObject()">Create Object</button>
+
+            <button onclick="runGC()" class="gc-btn">
+                Run Garbage Collector
+            </button>
+
+        </section>
+
+        <section class="memory-section">
+            <h2>Memory Objects</h2>
+            <div id="memoryContainer"></div>
+        </section>
+
+        <section class="logs-section">
+            <h2>System Logs</h2>
+            <div id="logs"></div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
