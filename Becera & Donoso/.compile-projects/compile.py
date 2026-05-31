@@ -271,12 +271,17 @@ def sync_project(p: Project, target: Path, dry_run: bool) -> tuple[str, str | No
 
 
 def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
-    """Shallow-clone p.repo_url into target, then strip .git."""
-    # Sibling temp dir avoids leaving target half-populated on failure.
+    """Shallow-clone p.repo_url into target, then strip .git.
+
+    On Windows the safe sequence is: clone into a sibling temp dir, scrub
+    the .git inside it, fully delete the existing target if any, then merge
+    the temp's contents into the (possibly newly recreated) target file by
+    file. Pure shutil.move at the directory level can still race with
+    indexing services holding handles on the just-deleted target.
+    """
     temp = target.with_name(f".{target.name}.syncing")
-    for path in (temp, target):
-        if path.exists():
-            shutil.rmtree(path, ignore_errors=True)
+    if temp.exists():
+        shutil.rmtree(temp, ignore_errors=True)
 
     args = ["clone", "--depth", "1"]
     if p.branch:
@@ -288,36 +293,55 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
         shutil.rmtree(temp, ignore_errors=True)
         return "error", str(e)
 
-    # Strip .git so the aggregate stays single-rooted and viewable on github.com.
+    # Strip .git so the aggregate stays single-rooted on github.com.
     git_dir = temp / ".git"
     if git_dir.exists():
         shutil.rmtree(git_dir, ignore_errors=True)
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    # Belt-and-braces: on Windows, shutil.rmtree above can return before the
-    # directory is fully gone (open handles from indexers, antivirus). Retry
-    # with a tiny backoff before falling back to shutil.move, which copies
-    # contents file-by-file rather than relying on a single atomic rename.
-    import time
-    for attempt in range(5):
-        if target.exists():
-            shutil.rmtree(target, ignore_errors=True)
-            time.sleep(0.1 * (attempt + 1))
-        try:
-            temp.rename(target)
-            break
-        except OSError:
-            if attempt == 4:
-                # Last resort: copy then remove. Slower but never fights
-                # Windows directory locking.
-                try:
-                    shutil.copytree(temp, target)
-                    shutil.rmtree(temp, ignore_errors=True)
-                except Exception as e:
-                    return "error", f"Could not place {target}: {e}"
-            else:
-                continue
+    try:
+        _replace_dir(temp, target)
+    except OSError as e:
+        return "error", f"Could not place {target}: {e}"
     return "synced", None
+
+
+def _replace_dir(src: Path, dst: Path) -> None:
+    """Replace dst with src's contents, then delete src.
+
+    Windows-safe: never relies on a single atomic directory rename. If dst
+    exists, its contents are removed first via shutil.rmtree retry loop.
+    Then the target is recreated empty and src's children are moved one at
+    a time.
+    """
+    import time
+
+    # Phase 1: ensure dst is gone. Retry to ride out indexer / antivirus locks.
+    for attempt in range(8):
+        if not dst.exists():
+            break
+        shutil.rmtree(dst, ignore_errors=True)
+        if dst.exists():
+            time.sleep(0.15 * (attempt + 1))
+    if dst.exists():
+        # Truly stuck. Surface a clear error.
+        raise OSError(f"could not remove existing directory: {dst}")
+
+    # Phase 2: try the cheap atomic rename first.
+    try:
+        src.rename(dst)
+        return
+    except OSError:
+        pass  # fall through to the file-by-file path
+
+    # Phase 3: file-by-file move. shutil.move handles cross-volume and
+    # already-existing parents cleanly, and avoids the "directory exists"
+    # check that plain Path.rename trips on.
+    dst.mkdir(parents=True, exist_ok=False)
+    for child in list(src.iterdir()):
+        target_child = dst / child.name
+        shutil.move(str(child), str(target_child))
+    shutil.rmtree(src, ignore_errors=True)
 
 
 def _sync_local(target: Path) -> tuple[str, str | None]:
