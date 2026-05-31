@@ -74,9 +74,23 @@ class Project:
 
     @property
     def folder_name(self) -> str:
-        s = re.sub(r"[^\w\s\-]", "", self.title.strip(), flags=re.UNICODE)
-        s = re.sub(r"\s+", "-", s).strip("-")
-        return s or "Untitled"
+        # Pair members are the canonical folder name, falling back to the
+        # project title when the roster is incomplete.
+        if self.student_a and self.student_b:
+            raw = f"{self.student_a} & {self.student_b}"
+        elif self.student_a:
+            raw = self.student_a
+        elif self.student_b:
+            raw = self.student_b
+        else:
+            raw = self.title.strip() or "Untitled"
+
+        # Strip Windows-forbidden filename characters (`< > : " / \ | ? *`),
+        # collapse runs of whitespace, and trim. Spaces and `&` survive since
+        # both git and github.com handle them cleanly.
+        cleaned = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", raw)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip(" .")
+        return cleaned or "Untitled"
 
     @property
     def has_repo(self) -> bool:
@@ -131,6 +145,27 @@ def run_git(args: list[str], cwd: Path | None = None, check: bool = True) -> tup
             f"git {' '.join(args)} failed in {cwd or '.'}:\n{proc.stderr.strip() or proc.stdout.strip()}"
         )
     return proc.returncode, proc.stdout, proc.stderr
+
+
+def prune_orphans(projects: list[Project], output: Path) -> list[str]:
+    """Remove folders in the aggregate that no longer correspond to a CSV row.
+
+    Returns the list of removed folder names. Anything that isn't a project
+    folder (README.md, _MISSING.md, .git, etc.) is left alone.
+    """
+    expected = {p.folder_name for p in projects if p.has_repo}
+    # Filenames the script owns that must never be pruned.
+    reserved_files = {"README.md", "_MISSING.md", ".gitignore", ".gitattributes", "LICENSE"}
+    reserved_dirs = {".git", ".github"}
+
+    removed: list[str] = []
+    for entry in output.iterdir():
+        if entry.name in reserved_files or entry.name in reserved_dirs:
+            continue
+        if entry.is_dir() and entry.name not in expected:
+            shutil.rmtree(entry, ignore_errors=True)
+            removed.append(entry.name)
+    return removed
 
 
 def init_aggregate(repo_url: str, output: Path) -> None:
@@ -408,6 +443,13 @@ def main() -> int:
 
     print()
     if not args.dry_run:
+        # Drop folders that no longer match any CSV row (renames, removals, scheme changes).
+        removed = prune_orphans(projects, output)
+        for name in removed:
+            print(f"  [prune] {name}")
+        if removed:
+            print()
+
         write_master_readme(projects, output, results)
         write_missing_report(projects, output)
         print(f"Wrote {output / 'README.md'}")
