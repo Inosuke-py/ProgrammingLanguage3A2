@@ -22,18 +22,17 @@ Each project folder is a flat snapshot of the team's repository at sync time. `.
 
 ### 1. Fill the roster
 
-Open `projects.csv` next to this README. One row per project. Columns:
+Open `projects.csv` next to this README. One row per pair. Columns:
 
 | Column | What goes here |
 |---|---|
-| `project_title` | Project name. Becomes the folder name (sanitized for filesystems). |
-| `student_a` | First pair member's full name. |
-| `student_b` | Second pair member. Blank if solo. |
-| `repo_url` | GitHub/GitLab clone URL. Blank if not yet submitted. Use `LOCAL` for your own Kino entry. |
+| `student_a` | First pair member's full name. Becomes part of the folder name. |
+| `student_b` | Second pair member's full name. Blank if solo. |
+| `repo_url` | GitHub/GitLab clone URL. Blank if not yet submitted. Use `LOCAL` for the entry that copies your local working tree. |
 | `branch` | Optional. Override default branch. |
 | `notes` | Optional. Free-form note that lands in the master README. |
 
-Paste straight from a Google Sheet if you keep the roster there.
+The folder name in the aggregate is `<student_a> & <student_b>` (or just `<student_a>` for solo projects). Spaces and `&` are kept; only Windows-forbidden characters get stripped. Paste straight from a Google Sheet if you keep the roster there.
 
 ### 2. Make sure your git can push the aggregate
 

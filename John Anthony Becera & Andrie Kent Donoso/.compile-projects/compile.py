@@ -65,7 +65,6 @@ DEFAULT_OUTPUT = _derive_output(REPO_URL)
 # ─── Data ──────────────────────────────────────────────────────────────────────
 @dataclass
 class Project:
-    title: str
     student_a: str
     student_b: str
     repo_url: str
@@ -73,24 +72,24 @@ class Project:
     notes: str
 
     @property
-    def folder_name(self) -> str:
-        # Pair members are the canonical folder name, falling back to the
-        # project title when the roster is incomplete.
+    def pair_label(self) -> str:
+        """Human-friendly identifier for logs and the master README."""
         if self.student_a and self.student_b:
-            raw = f"{self.student_a} & {self.student_b}"
-        elif self.student_a:
-            raw = self.student_a
-        elif self.student_b:
-            raw = self.student_b
-        else:
-            raw = self.title.strip() or "Untitled"
+            return f"{self.student_a} & {self.student_b}"
+        if self.student_a:
+            return self.student_a
+        if self.student_b:
+            return self.student_b
+        return "Unnamed pair"
 
-        # Strip Windows-forbidden filename characters (`< > : " / \ | ? *`),
-        # collapse runs of whitespace, and trim. Spaces and `&` survive since
-        # both git and github.com handle them cleanly.
-        cleaned = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", raw)
+    @property
+    def folder_name(self) -> str:
+        # Filesystem-safe version of the pair label. Strips Windows-forbidden
+        # filename characters (`< > : " / \ | ? *` and control chars).
+        # Spaces and `&` survive since both git and github.com handle them.
+        cleaned = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", self.pair_label)
         cleaned = re.sub(r"\s+", " ", cleaned).strip(" .")
-        return cleaned or "Untitled"
+        return cleaned or "Unnamed pair"
 
     @property
     def has_repo(self) -> bool:
@@ -109,20 +108,21 @@ def load_projects(csv_path: Path) -> list[Project]:
     out: list[Project] = []
     with csv_path.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
-        required = {"project_title", "student_a", "student_b", "repo_url"}
+        required = {"student_a", "student_b", "repo_url"}
         if not required.issubset(reader.fieldnames or []):
             die(
                 f"CSV missing required columns. Need at least: {sorted(required)}\n"
                 f"Got: {reader.fieldnames}"
             )
         for row in reader:
-            title = (row.get("project_title") or "").strip()
-            if not title:
+            student_a = (row.get("student_a") or "").strip()
+            student_b = (row.get("student_b") or "").strip()
+            # Skip rows that have nothing useful in them.
+            if not student_a and not student_b and not (row.get("repo_url") or "").strip():
                 continue
             out.append(Project(
-                title=title,
-                student_a=(row.get("student_a") or "").strip(),
-                student_b=(row.get("student_b") or "").strip(),
+                student_a=student_a,
+                student_b=student_b,
                 repo_url=(row.get("repo_url") or "").strip(),
                 branch=(row.get("branch") or "").strip(),
                 notes=(row.get("notes") or "").strip(),
@@ -313,7 +313,7 @@ def _sync_local(target: Path) -> tuple[str, str | None]:
 
 # ─── Reports ───────────────────────────────────────────────────────────────────
 def write_master_readme(projects: list[Project], output: Path, results: dict[str, tuple[str, str | None]]) -> None:
-    sorted_projects = sorted(projects, key=lambda x: x.title.lower())
+    sorted_projects = sorted(projects, key=lambda x: x.pair_label.lower())
     submitted = [p for p in sorted_projects if p.has_repo]
     pending = [p for p in sorted_projects if not p.has_repo]
 
@@ -321,10 +321,10 @@ def write_master_readme(projects: list[Project], output: Path, results: dict[str
         "# Programming Language 3A2 Section Projects",
         "",
         f"Compiled on {datetime.now().strftime('%Y-%m-%d %H:%M')}.",
-        f"{len(submitted)} of {len(projects)} projects have a repository linked.",
+        f"{len(submitted)} of {len(projects)} pairs have a repository linked.",
         "",
-        "Each project lives in its own folder. The folder is a plain snapshot",
-        "of the team's repository at sync time, no nested git history.",
+        "Each pair has its own folder. Folders are plain snapshots of the team's",
+        "repository at sync time, no nested git history.",
         "",
         "## Submitted",
         "",
@@ -333,11 +333,9 @@ def write_master_readme(projects: list[Project], output: Path, results: dict[str
         lines.append("_None yet._")
     else:
         for p in submitted:
-            members = " & ".join(filter(None, [p.student_a, p.student_b])) or "_pair TBD_"
             link = "_(local checkout)_" if p.is_local else f"[{p.repo_url}]({p.repo_url})"
-            lines.append(f"### [{p.title}](./{p.folder_name}/)")
+            lines.append(f"### [{p.pair_label}](./{p.folder_name}/)")
             lines.append("")
-            lines.append(f"- Pair: {members}")
             lines.append(f"- Source: {link}")
             if p.branch:
                 lines.append(f"- Branch: `{p.branch}`")
@@ -349,9 +347,8 @@ def write_master_readme(projects: list[Project], output: Path, results: dict[str
         lines.append("## Pending submission")
         lines.append("")
         for p in pending:
-            members = " & ".join(filter(None, [p.student_a, p.student_b])) or "_pair TBD_"
             note = f" ({p.notes})" if p.notes else ""
-            lines.append(f"- **{p.title}** — {members}{note}")
+            lines.append(f"- {p.pair_label}{note}")
         lines.append("")
 
     (output / "README.md").write_text("\n".join(lines), encoding="utf-8")
@@ -361,7 +358,6 @@ def write_missing_report(projects: list[Project], output: Path) -> None:
     pending = [p for p in projects if not p.has_repo]
     target = output / "_MISSING.md"
     if not pending:
-        # All caught up. Remove a stale missing list if one was committed earlier.
         if target.exists():
             target.unlink()
         return
@@ -369,14 +365,13 @@ def write_missing_report(projects: list[Project], output: Path) -> None:
     lines = [
         "# Pending submissions",
         "",
-        f"As of {datetime.now().strftime('%Y-%m-%d %H:%M')}, these projects have no repository link in `.compile-projects/projects.csv`.",
+        f"As of {datetime.now().strftime('%Y-%m-%d %H:%M')}, these pairs have no repository link in `.compile-projects/projects.csv`.",
         "",
-        "| Project | Pair | Notes |",
-        "|---|---|---|",
+        "| Pair | Notes |",
+        "|---|---|",
     ]
     for p in pending:
-        members = " & ".join(filter(None, [p.student_a, p.student_b])) or "_pair TBD_"
-        lines.append(f"| {p.title} | {members} | {p.notes or ''} |")
+        lines.append(f"| {p.pair_label} | {p.notes or ''} |")
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -422,7 +417,7 @@ def main() -> int:
 
     for p in projects:
         target = output / p.folder_name
-        label = f"{p.title:38s}"
+        label = f"{p.pair_label:50s}"
         if not p.has_repo:
             print(f"  [skip ] {label} (no repo yet)")
             results[p.folder_name] = ("skipped-no-repo", None)
