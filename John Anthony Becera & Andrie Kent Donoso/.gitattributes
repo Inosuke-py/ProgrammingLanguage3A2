@@ -1,2 +1,0 @@
-# Force LF on shell scripts so they work when checked out on Linux VPS
-*.sh text eol=lf

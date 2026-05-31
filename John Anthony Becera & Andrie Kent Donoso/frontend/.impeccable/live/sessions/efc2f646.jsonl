@@ -1,1 +1,0 @@
-{"seq":1,"id":"efc2f646","type":"checkpoint","ts":"2026-05-24T04:21:56.058Z","event":{"type":"checkpoint","id":"efc2f646","revision":1,"owner":"90a314a3","phase":"generating","reason":"generate_started","pageUrl":"/","expectedVariants":3,"arrivedVariants":0,"visibleVariant":0,"paramValues":{},"token":"d25963b6-cea8-405d-ab0f-6f5875f32444"}}
