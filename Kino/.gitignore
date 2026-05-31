@@ -1,0 +1,97 @@
+# ─── Secrets & environment ────────────────────────────────────────────────────
+# Never commit real env files. .env.example is fine (and tracked).
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+secrets/
+.kiro/settings/mcp.json
+
+# Stray credential / token files (defense in depth)
+*token*.txt
+*secret*.txt
+*credentials*.txt
+*.token
+secret.py
+secrets.py
+
+# ─── Project root: tooling / unrelated files ──────────────────────────────────
+# Binaries
+ngrok.exe
+*.exe
+
+# Kiro IDE artifacts (keep .kiro/steering for collaborators; ignore the rest)
+.agents/
+.kiro/settings/
+skills-lock.json
+
+# Unrelated documents (school project docs that aren't Kino)
+LEXARA_SYSTEM_DOCUMENT.docx
+
+# Root-level planning / docs (kept locally only)
+/*.md
+/*.docx
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ─── Node / Vite ──────────────────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── User uploads (regenerated at runtime) ────────────────────────────────────
+backend/uploads/
+uploads/
+*.pdf
+!frontend/public/**/*.pdf
+!docs/**/*.pdf
+
+# ─── User-generated docs ──────────────────────────────────────────────────────
+*.docx
+!**/templates/*.docx
+
+# ─── Editor / OS noise ────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Local DB dumps ───────────────────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
