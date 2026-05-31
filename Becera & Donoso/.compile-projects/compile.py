@@ -309,39 +309,64 @@ def _sync_remote(p: Project, target: Path) -> tuple[str, str | None]:
 def _replace_dir(src: Path, dst: Path) -> None:
     """Replace dst with src's contents, then delete src.
 
-    Windows-safe: never relies on a single atomic directory rename. If dst
-    exists, its contents are removed first via shutil.rmtree retry loop.
-    Then the target is recreated empty and src's children are moved one at
-    a time.
+    Windows-safe: we never rely on the OS-level atomic rename of one
+    directory onto another. The sequence is:
+      1. Forcefully remove dst, with retry, falling back to a Windows
+         shell command if Python's shutil keeps tripping on locked handles.
+      2. Move src's children into a freshly-created dst, file by file.
     """
     import time
+    import os
 
-    # Phase 1: ensure dst is gone. Retry to ride out indexer / antivirus locks.
-    for attempt in range(8):
-        if not dst.exists():
-            break
-        shutil.rmtree(dst, ignore_errors=True)
-        if dst.exists():
-            time.sleep(0.15 * (attempt + 1))
-    if dst.exists():
-        # Truly stuck. Surface a clear error.
-        raise OSError(f"could not remove existing directory: {dst}")
+    def _force_rmtree(path: Path) -> bool:
+        """Hardened remove. Returns True if path is gone after we're done."""
+        if not path.exists():
+            return True
 
-    # Phase 2: try the cheap atomic rename first.
-    try:
-        src.rename(dst)
-        return
-    except OSError:
-        pass  # fall through to the file-by-file path
+        # First try: shutil with onerror so we can chmod+retry locked items.
+        def _on_error(func, p, exc_info):  # noqa: ARG001
+            try:
+                os.chmod(p, 0o777)
+                func(p)
+            except Exception:
+                pass
 
-    # Phase 3: file-by-file move. shutil.move handles cross-volume and
-    # already-existing parents cleanly, and avoids the "directory exists"
-    # check that plain Path.rename trips on.
+        for attempt in range(6):
+            try:
+                shutil.rmtree(path, onerror=_on_error)
+            except Exception:
+                pass
+            if not path.exists():
+                return True
+            time.sleep(0.2 * (attempt + 1))
+
+        # Second try: Windows shell `rmdir /s /q`. Different code path,
+        # different lock semantics, often clears the last stragglers.
+        if os.name == "nt":
+            try:
+                subprocess.run(
+                    ["cmd.exe", "/c", "rmdir", "/s", "/q", str(path)],
+                    capture_output=True,
+                    text=True,
+                )
+            except Exception:
+                pass
+            time.sleep(0.3)
+
+        return not path.exists()
+
+    if not _force_rmtree(dst):
+        raise OSError(
+            f"could not remove existing directory after multiple attempts: {dst}\n"
+            "Close any program that has it open (file explorer, VS Code, antivirus scan)."
+        )
+
+    # Move src's children into a fresh dst. This avoids the Windows directory-
+    # rename gotcha completely.
     dst.mkdir(parents=True, exist_ok=False)
     for child in list(src.iterdir()):
-        target_child = dst / child.name
-        shutil.move(str(child), str(target_child))
-    shutil.rmtree(src, ignore_errors=True)
+        shutil.move(str(child), str(dst / child.name))
+    _force_rmtree(src)
 
 
 def _sync_local(target: Path) -> tuple[str, str | None]:
