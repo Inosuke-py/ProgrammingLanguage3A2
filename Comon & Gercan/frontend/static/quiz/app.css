@@ -1,0 +1,52 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.choice-selected {
+    border-color: rgb(5 150 105);
+    background-color: rgb(236 253 245);
+}
+
+.choice-correct {
+    border-color: rgb(22 163 74);
+    background-color: rgb(240 253 244);
+}
+
+.choice-wrong {
+    border-color: rgb(220 38 38);
+    background-color: rgb(254 242 242);
+}
+
+.char-bounce {
+    display: inline-block;
+}
+
+.char-bounce span:not(.char-space) {
+    display: inline-block;
+    animation: character-bounce 2.6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.045s);
+}
+
+.char-space {
+    display: inline-block;
+    width: 0.32em;
+}
+
+@keyframes character-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    18% {
+        transform: translateY(-10px);
+    }
+    30% {
+        transform: translateY(2px);
+    }
+    42% {
+        transform: translateY(0);
+    }
+}

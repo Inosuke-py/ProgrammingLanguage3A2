@@ -1,0 +1,264 @@
+{% extends "quiz/base.html" %}
+
+{% block title %}{% if user.is_authenticated %}Dashboard | PRAXIS{% else %}Generate a Programming Languages Quiz{% endif %}{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<section class="bg-zinc-50 px-4 py-6 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">System dashboard</p>
+            <h1 class="mt-1 text-3xl font-bold text-zinc-950">Interactive Quiz Generator Overview</h1>
+            <p class="mt-2 text-sm text-zinc-600">
+                {% if dashboard.role == "instructor" %}
+                Monitor quiz activity, student participation, and assessment outcomes.
+                {% else %}
+                Track assigned quizzes, completed attempts, scores, and learning progress.
+                {% endif %}
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% for action in dashboard.quick_actions %}
+            <a href="{% url action.url_name %}" class="rounded-lg px-4 py-2 text-sm font-semibold {% if action.style == 'primary' %}bg-emerald-600 text-white hover:bg-emerald-700{% else %}border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100{% endif %}">{{ action.label }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {% for stat in dashboard.stats %}
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-zinc-500">{{ stat.label }}</p>
+            <p class="mt-2 text-3xl font-bold text-zinc-950">{{ stat.value }}</p>
+            <p class="mt-1 text-xs text-zinc-500">{{ stat.detail }}</p>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="mt-6 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-950">Score Distribution</h2>
+                <span class="text-xs font-medium uppercase text-zinc-400">Attempts</span>
+            </div>
+            <div class="grid gap-4">
+                {% for band in dashboard.score_bands %}
+                <div>
+                    <div class="mb-1 flex items-center justify-between text-sm">
+                        <span class="font-medium text-zinc-700">{{ band.label }}%</span>
+                        <span class="text-zinc-500">{{ band.count }}</span>
+                    </div>
+                    <div class="h-3 rounded-full bg-zinc-100">
+                        <div class="h-3 rounded-full bg-emerald-600" style="width: {{ band.width }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-950">Pass vs Fail</h2>
+                <span class="text-xs font-medium uppercase text-zinc-400">Outcome</span>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
+                <div class="mx-auto grid h-36 w-36 place-items-center rounded-full border-[18px] border-emerald-500 bg-white text-center shadow-inner" style="border-right-color: rgb(239 68 68); border-bottom-color: rgb(239 68 68);">
+                    <div>
+                        <p class="text-2xl font-bold text-zinc-950">{{ dashboard.pass_fail.passed_rate }}%</p>
+                        <p class="text-xs text-zinc-500">pass rate</p>
+                    </div>
+                </div>
+                <div class="grid gap-3">
+                    <div class="rounded-lg bg-emerald-50 p-3">
+                        <p class="text-sm font-semibold text-emerald-800">Passed</p>
+                        <p class="mt-1 text-2xl font-bold text-emerald-900">{{ dashboard.pass_fail.passed }}</p>
+                    </div>
+                    <div class="rounded-lg bg-red-50 p-3">
+                        <p class="text-sm font-semibold text-red-800">Failed</p>
+                        <p class="mt-1 text-2xl font-bold text-red-900">{{ dashboard.pass_fail.failed }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="mt-6 grid gap-5 xl:grid-cols-2">
+        {% if dashboard.role == "instructor" %}
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-zinc-950">Most Attempted Quizzes</h2>
+            <div class="mt-4 grid gap-3">
+                {% for row in dashboard.most_attempted %}
+                <div>
+                    <div class="mb-1 flex justify-between text-sm">
+                        <span class="font-medium text-zinc-700">{{ row.quiz.title }}</span>
+                        <span class="text-zinc-500">{{ row.count }}</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-zinc-100">
+                        <div class="h-2 rounded-full bg-cyan-600" style="width: {{ row.width }}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-zinc-500">No quizzes created yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-zinc-950">Student Participation</h2>
+            <div class="mt-4 grid gap-3">
+                {% for row in dashboard.participation %}
+                <div>
+                    <div class="mb-1 flex justify-between text-sm">
+                        <span class="font-medium text-zinc-700">{{ row.name }}</span>
+                        <span class="text-zinc-500">{{ row.count }} attempts</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-zinc-100">
+                        <div class="h-2 rounded-full bg-violet-600" style="width: {{ row.width }}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-zinc-500">No student attempts yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+        {% else %}
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-zinc-950">Assigned Quizzes</h2>
+            <div class="mt-4 grid gap-3">
+                {% for quiz in dashboard.pending_quizzes %}
+                <a href="{{ quiz.get_absolute_url }}" class="rounded-lg border border-zinc-200 p-3 hover:border-emerald-300 hover:bg-emerald-50">
+                    <span class="block text-sm font-semibold text-zinc-950">{{ quiz.title }}</span>
+                    <span class="mt-1 block text-xs text-zinc-500">{{ quiz.get_difficulty_display }} · {{ quiz.questions|length }} questions · {{ quiz.time_limit_seconds }}s each</span>
+                </a>
+                {% empty %}
+                <p class="text-sm text-zinc-500">No pending assigned quizzes.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-zinc-950">Learning Progress</h2>
+            <div class="mt-4 space-y-3">
+                {% for attempt in dashboard.recent_attempts %}
+                <div class="rounded-lg border border-zinc-200 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-semibold text-zinc-950">{{ attempt.quiz.title }}</p>
+                        <span class="text-sm font-bold {% if attempt.passed %}text-emerald-700{% else %}text-red-700{% endif %}">{{ attempt.percentage }}%</span>
+                    </div>
+                    <p class="mt-1 text-xs text-zinc-500">{{ attempt.completed_at|date:"M d, Y H:i" }} · {{ attempt.completion_time_seconds }}s</p>
+                </div>
+                {% empty %}
+                <p class="text-sm text-zinc-500">Complete a quiz to build your progress history.</p>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-950">Recent Quizzes</h2>
+                <a href="{% url 'quiz:my_quizzes' %}" class="text-sm font-semibold text-emerald-700 hover:underline">View all</a>
+            </div>
+            <div class="grid gap-3">
+                {% for quiz in dashboard.recent_quizzes %}
+                <a href="{{ quiz.get_absolute_url }}" class="rounded-lg border border-zinc-200 p-3 hover:border-emerald-300 hover:bg-emerald-50">
+                    <span class="block text-sm font-semibold text-zinc-950">{{ quiz.title }}</span>
+                    <span class="mt-1 block text-xs text-zinc-500">{{ quiz.get_difficulty_display }} · {{ quiz.questions|length }} questions · {{ quiz.created_at|date:"M d, Y" }}</span>
+                </a>
+                {% empty %}
+                <p class="text-sm text-zinc-500">No quizzes to show yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-950">Recent Activity</h2>
+                <a href="{% url 'quiz:results' %}" class="text-sm font-semibold text-emerald-700 hover:underline">Results</a>
+            </div>
+            <div class="overflow-hidden rounded-lg border border-zinc-200">
+                <table class="w-full text-left text-sm text-zinc-600">
+                    <thead class="bg-zinc-50 text-xs uppercase text-zinc-500">
+                        <tr>
+                            <th class="px-4 py-3">Quiz</th>
+                            {% if dashboard.role == "instructor" %}<th class="px-4 py-3">Student</th>{% endif %}
+                            <th class="px-4 py-3">Score</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in dashboard.recent_attempts %}
+                        <tr class="border-t border-zinc-100">
+                            <td class="px-4 py-3 font-medium text-zinc-950">{{ attempt.quiz.title }}</td>
+                            {% if dashboard.role == "instructor" %}<td class="px-4 py-3">{{ attempt.user.username }}</td>{% endif %}
+                            <td class="px-4 py-3">{{ attempt.score }}/{{ attempt.total_questions }} ({{ attempt.percentage }}%)</td>
+                            <td class="px-4 py-3"><span class="font-semibold {% if attempt.passed %}text-emerald-700{% else %}text-red-700{% endif %}">{% if attempt.passed %}Passed{% else %}Failed{% endif %}</span></td>
+                            <td class="px-4 py-3">{{ attempt.completed_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="{% if dashboard.role == 'instructor' %}5{% else %}4{% endif %}" class="px-4 py-4 text-zinc-500">No submissions yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</section>
+{% else %}
+<section class="border-b border-zinc-200 bg-white">
+    <div class="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+        <div class="flex flex-col justify-center">
+            <p class="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-700">Programming Languages Project</p>
+            <h1 class="char-bounce max-w-3xl text-4xl font-bold tracking-normal text-zinc-950 sm:text-5xl" aria-label="Interactive quiz generator for language feature mastery">
+                <span aria-hidden="true" style="--i: 0">I</span><span aria-hidden="true" style="--i: 1">n</span><span aria-hidden="true" style="--i: 2">t</span><span aria-hidden="true" style="--i: 3">e</span><span aria-hidden="true" style="--i: 4">r</span><span aria-hidden="true" style="--i: 5">a</span><span aria-hidden="true" style="--i: 6">c</span><span aria-hidden="true" style="--i: 7">t</span><span aria-hidden="true" style="--i: 8">i</span><span aria-hidden="true" style="--i: 9">v</span><span aria-hidden="true" style="--i: 10">e</span><span class="char-space" aria-hidden="true" style="--i: 11"></span><span aria-hidden="true" style="--i: 12">q</span><span aria-hidden="true" style="--i: 13">u</span><span aria-hidden="true" style="--i: 14">i</span><span aria-hidden="true" style="--i: 15">z</span><span class="char-space" aria-hidden="true" style="--i: 16"></span><span aria-hidden="true" style="--i: 17">g</span><span aria-hidden="true" style="--i: 18">e</span><span aria-hidden="true" style="--i: 19">n</span><span aria-hidden="true" style="--i: 20">e</span><span aria-hidden="true" style="--i: 21">r</span><span aria-hidden="true" style="--i: 22">a</span><span aria-hidden="true" style="--i: 23">t</span><span aria-hidden="true" style="--i: 24">o</span><span aria-hidden="true" style="--i: 25">r</span><span class="char-space" aria-hidden="true" style="--i: 26"></span><span aria-hidden="true" style="--i: 27">f</span><span aria-hidden="true" style="--i: 28">o</span><span aria-hidden="true" style="--i: 29">r</span><span class="char-space" aria-hidden="true" style="--i: 30"></span><span aria-hidden="true" style="--i: 31">l</span><span aria-hidden="true" style="--i: 32">a</span><span aria-hidden="true" style="--i: 33">n</span><span aria-hidden="true" style="--i: 34">g</span><span aria-hidden="true" style="--i: 35">u</span><span aria-hidden="true" style="--i: 36">a</span><span aria-hidden="true" style="--i: 37">g</span><span aria-hidden="true" style="--i: 38">e</span><span class="char-space" aria-hidden="true" style="--i: 39"></span><span aria-hidden="true" style="--i: 40">f</span><span aria-hidden="true" style="--i: 41">e</span><span aria-hidden="true" style="--i: 42">a</span><span aria-hidden="true" style="--i: 43">t</span><span aria-hidden="true" style="--i: 44">u</span><span aria-hidden="true" style="--i: 45">r</span><span aria-hidden="true" style="--i: 46">e</span><span class="char-space" aria-hidden="true" style="--i: 47"></span><span aria-hidden="true" style="--i: 48">m</span><span aria-hidden="true" style="--i: 49">a</span><span aria-hidden="true" style="--i: 50">s</span><span aria-hidden="true" style="--i: 51">t</span><span aria-hidden="true" style="--i: 52">e</span><span aria-hidden="true" style="--i: 53">r</span><span aria-hidden="true" style="--i: 54">y</span>
+            </h1>
+            <p class="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Build Kotobee-style quizzes around concurrency and parallelism, duck typing, memory overhead, and dangling pointers. Each generated quiz includes instant feedback, explanations, and optimization notes.</p>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a href="{% url 'account_signup' %}" class="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700">Create account</a>
+                <a href="{% url 'account_login' %}" class="rounded-lg border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-800 hover:bg-zinc-100">Login</a>
+            </div>
+        </div>
+        <div class="grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+            <div class="rounded-lg bg-zinc-950 p-4 font-mono text-sm text-zinc-100 shadow-sm">
+                <div class="text-emerald-300">quiz.generate(topics=[...])</div>
+                <div class="mt-3 text-zinc-300">score = explain(answer, concept)</div>
+                <div class="mt-3 text-cyan-300">optimize(memory, safety, speed)</div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-lg border border-zinc-200 bg-white p-4">
+                    <div class="text-2xl font-bold text-zinc-950">4</div>
+                    <div class="text-sm text-zinc-500">Core PL topics</div>
+                </div>
+                <div class="rounded-lg border border-zinc-200 bg-white p-4">
+                    <div class="text-2xl font-bold text-zinc-950">3</div>
+                    <div class="text-sm text-zinc-500">Difficulty modes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="feature-lab" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="grid gap-4 lg:grid-cols-2">
+    {% for feature in features %}
+    <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h3 class="text-lg font-semibold text-zinc-950">{{ feature.label }}</h3>
+                <p class="mt-1 text-sm leading-6 text-zinc-600">{{ feature.tagline }}</p>
+            </div>
+            <span class="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{{ feature.languages|join:", " }}</span>
+        </div>
+        <ul class="mt-4 space-y-2 text-sm text-zinc-600">
+            {% for item in feature.optimization %}
+            <li class="flex gap-2"><span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span><span>{{ item }}</span></li>
+            {% endfor %}
+        </ul>
+    </article>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

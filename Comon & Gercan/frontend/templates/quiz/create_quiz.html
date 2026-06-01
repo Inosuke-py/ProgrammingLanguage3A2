@@ -1,0 +1,182 @@
+{% extends "quiz/base.html" %}
+{% load static %}
+
+{% block title %}Create Quiz | PRAXIS{% endblock %}
+
+{% block content %}
+<section class="px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Create Quiz</p>
+        <h1 class="text-3xl font-bold text-zinc-950">Quiz Generator</h1>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">Choose the feature mix, set the challenge level, and generate an interactive quiz.</p>
+    </div>
+
+    <div class="mb-6 border-b border-zinc-200">
+        <ul class="-mb-px flex flex-wrap gap-4 text-center text-sm font-medium text-zinc-500">
+            <li><button type="button" data-tab="manual-panel" class="builder-tab active-tab inline-block border-b-2 border-emerald-600 px-1 py-3 text-emerald-700">Manual generator</button></li>
+            <li><button type="button" data-tab="pdf-panel" class="builder-tab inline-block border-b-2 border-transparent px-1 py-3 hover:border-zinc-300 hover:text-zinc-700">Import PDF</button></li>
+        </ul>
+    </div>
+
+    <div id="manual-panel" class="tab-panel grid max-w-7xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <form action="{% url 'quiz:generate' %}" method="post" class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+            {% csrf_token %}
+
+            <div class="mb-5">
+                <label for="title" class="mb-2 block text-sm font-medium text-zinc-900">Quiz title</label>
+                <input id="title" name="title" type="text" value="Programming Languages Feature Quiz" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+            </div>
+
+            <div class="mb-5">
+                <span class="mb-2 block text-sm font-medium text-zinc-900">Topics</span>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    {% for feature in features %}
+                    <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 p-3 hover:bg-zinc-50">
+                        <input type="checkbox" name="topics" value="{{ feature.key }}" checked class="mt-1 h-4 w-4 rounded border-zinc-300 bg-zinc-100 text-emerald-600 focus:ring-emerald-500">
+                        <span>
+                            <span class="block text-sm font-semibold text-zinc-950">{{ feature.label }}</span>
+                            <span class="block text-xs leading-5 text-zinc-500">{{ feature.tagline }}</span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="difficulty" class="mb-2 block text-sm font-medium text-zinc-900">Difficulty</label>
+                    <select id="difficulty" name="difficulty" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                        <option value="fundamentals">Fundamentals</option>
+                        <option value="applied" selected>Applied</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="count" class="mb-2 block text-sm font-medium text-zinc-900">Question count</label>
+                    <input id="count" name="count" type="number" min="1" max="12" value="8" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="time_limit_seconds" class="mb-2 block text-sm font-medium text-zinc-900">Seconds per question</label>
+                    <input id="time_limit_seconds" name="time_limit_seconds" type="number" min="1" max="300" value="5" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label for="pass_mark" class="mb-2 block text-sm font-medium text-zinc-900">Pass mark (%)</label>
+                    <input id="pass_mark" name="pass_mark" type="number" min="1" max="100" value="60" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="mt-5 grid gap-4">
+                <div>
+                    <span class="mb-2 block text-sm font-medium text-zinc-900">Student access</span>
+                    <div class="max-h-64 overflow-y-auto rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+                        {% for student in students %}
+                        <label class="mb-2 flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 last:mb-0 hover:border-emerald-300">
+                            <span>
+                                <span class="block text-sm font-semibold text-zinc-950">{{ student.username }}</span>
+                                {% if student.email %}<span class="block text-xs text-zinc-500">{{ student.email }}</span>{% endif %}
+                            </span>
+                            <span class="flex items-center gap-2 text-xs font-semibold text-zinc-600">
+                                <span>Cannot take</span>
+                                <input type="checkbox" name="assigned_users" value="{{ student.id }}" class="h-4 w-4 rounded border-zinc-300 bg-zinc-100 text-emerald-600 focus:ring-emerald-500">
+                                <span class="text-emerald-700">Can take</span>
+                            </span>
+                        </label>
+                        {% empty %}
+                        <div class="rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-500">No student accounts found yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <label for="assigned_groups" class="mb-2 block text-sm font-medium text-zinc-900">Assigned groups</label>
+                    <select id="assigned_groups" name="assigned_groups" multiple size="5" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                        {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="mt-6 w-full rounded-lg bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200">Generate interactive quiz</button>
+        </form>
+
+        <div class="grid gap-4">
+            {% for feature in features %}
+            <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold text-zinc-950">{{ feature.label }}</h2>
+                        <p class="mt-1 text-sm leading-6 text-zinc-600">{{ feature.tagline }}</p>
+                    </div>
+                    <span class="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{{ feature.languages|join:", " }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="pdf-panel" class="tab-panel hidden max-w-7xl">
+        <div class="grid gap-6 xl:grid-cols-[420px_1fr]">
+            <form id="pdfImportForm" class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+                {% csrf_token %}
+                <div class="mb-5">
+                    <h2 class="text-xl font-semibold text-zinc-950">Import PDF</h2>
+                    <p class="mt-1 text-sm leading-6 text-zinc-500">Upload a PDF document. PRAXIS extracts readable text and creates draft questions you can edit before publishing.</p>
+                </div>
+
+                <div class="mb-5">
+                    <label for="pdfTitle" class="mb-2 block text-sm font-medium text-zinc-900">Quiz title</label>
+                    <input id="pdfTitle" type="text" value="Imported PDF Quiz" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                </div>
+
+                <div class="mb-5">
+                    <label for="pdfFile" class="mb-2 block text-sm font-medium text-zinc-900">PDF file</label>
+                    <input id="pdfFile" name="pdf" type="file" accept="application/pdf,.pdf" class="block w-full cursor-pointer rounded-lg border border-zinc-300 bg-zinc-50 text-sm text-zinc-900 file:mr-4 file:border-0 file:bg-zinc-900 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white">
+                    <p class="mt-2 text-xs text-zinc-500">PDF only, max 8 MB. Scanned image-only PDFs may not produce text.</p>
+                </div>
+
+                <div class="mb-5">
+                    <label for="pdfQuestionCount" class="mb-2 block text-sm font-medium text-zinc-900">Draft question count</label>
+                    <input id="pdfQuestionCount" name="count" type="number" min="3" max="15" value="8" class="block w-full rounded-lg border border-zinc-300 bg-zinc-50 p-2.5 text-sm text-zinc-900 focus:border-emerald-500 focus:ring-emerald-500">
+                </div>
+
+                <button id="importPdfBtn" type="submit" class="flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700">
+                    <span id="importBtnText">Generate from PDF</span>
+                    <span id="importSpinner" class="ml-3 hidden h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                </button>
+                <div id="pdfMessage" class="mt-4 hidden rounded-lg border p-3 text-sm leading-6"></div>
+            </form>
+
+            <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-semibold text-zinc-950">Editable quiz builder</h2>
+                        <p id="builderSummary" class="mt-1 text-sm text-zinc-500">Import a PDF to generate editable draft questions.</p>
+                    </div>
+                    <button id="addQuestionBtn" type="button" class="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Add question</button>
+                </div>
+
+                <div id="questionBuilder" class="grid gap-4"></div>
+
+                <div class="mt-6 flex flex-wrap justify-end gap-3">
+                    <button id="clearBuilderBtn" type="button" class="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Clear</button>
+                    <button id="publishBuilderBtn" type="button" class="rounded-lg bg-zinc-950 px-5 py-2 text-sm font-semibold text-white hover:bg-zinc-800">Save / Publish Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.quizBuilderConfig = {
+        importUrl: "{% url 'quiz:import_pdf' %}",
+        saveUrl: "{% url 'quiz:save_builder_quiz' %}",
+        csrfToken: "{{ csrf_token }}",
+    };
+</script>
+<script src="{% static 'quiz/builder.js' %}"></script>
+{% endblock %}

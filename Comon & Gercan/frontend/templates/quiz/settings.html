@@ -1,0 +1,37 @@
+{% extends "quiz/base.html" %}
+
+{% block title %}Settings | PRAXIS{% endblock %}
+
+{% block content %}
+<section class="px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Settings</p>
+        <h1 class="text-3xl font-bold text-zinc-950">Account Settings</h1>
+    </div>
+
+    <div class="max-w-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+        <dl class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <dt class="text-sm text-zinc-500">Username</dt>
+                <dd class="mt-1 font-semibold text-zinc-950">{{ user.username }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-zinc-500">Email</dt>
+                <dd class="mt-1 font-semibold text-zinc-950">{{ user.email|default:"Not set" }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-zinc-500">Role</dt>
+                <dd class="mt-1 font-semibold text-zinc-950">{% if user.is_staff %}Administrator{% else %}Student user{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-zinc-500">Last login</dt>
+                <dd class="mt-1 font-semibold text-zinc-950">{{ user.last_login|date:"M d, Y H:i"|default:"Not recorded" }}</dd>
+            </div>
+        </dl>
+
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}" class="mt-6 inline-flex rounded-lg bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800">Open Django Admin</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

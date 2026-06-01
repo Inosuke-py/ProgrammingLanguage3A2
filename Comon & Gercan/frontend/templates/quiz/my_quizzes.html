@@ -1,0 +1,77 @@
+{% extends "quiz/base.html" %}
+
+{% block title %}{{ page_title }} | PRAXIS{% endblock %}
+
+{% block content %}
+<section class="px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Library</p>
+            <h1 class="text-3xl font-bold text-zinc-950">{{ page_title }}</h1>
+        </div>
+        {% if is_instructor %}
+        <a href="{% url 'quiz:create_quiz' %}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Create Quiz</a>
+        {% endif %}
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for quiz in quizzes %}
+        <a href="{{ quiz.get_absolute_url }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm hover:border-emerald-300 hover:bg-emerald-50">
+            <span class="block text-base font-semibold text-zinc-950">{{ quiz.title }}</span>
+            <span class="mt-2 block text-sm text-zinc-500">{{ quiz.get_difficulty_display }} · {{ quiz.questions|length }} questions</span>
+            <span class="mt-3 block text-xs text-zinc-400">{{ quiz.created_at|date:"M d, Y" }}</span>
+        </a>
+        {% empty %}
+        <div class="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">No quizzes yet. Create your first quiz from the dashboard.</div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-8">
+        <h2 class="mb-4 text-xl font-semibold text-zinc-950">{% if is_instructor %}Student attempts{% else %}Completed quizzes{% endif %}</h2>
+        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+            <table class="w-full text-left text-sm text-zinc-600">
+                <thead class="bg-zinc-50 text-xs uppercase text-zinc-500">
+                    <tr>
+                        <th class="px-4 py-3">Quiz</th>
+                        {% if is_instructor %}<th class="px-4 py-3">Student</th>{% endif %}
+                        <th class="px-4 py-3">Score</th>
+                        <th class="px-4 py-3">Time</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr class="border-t border-zinc-100">
+                        <td class="px-4 py-3 font-medium text-zinc-950">{{ attempt.quiz.title }}</td>
+                        {% if is_instructor %}<td class="px-4 py-3">{{ attempt.user.username }}</td>{% endif %}
+                        <td class="px-4 py-3">{{ attempt.score }}/{{ attempt.total_questions }} ({{ attempt.percentage }}%)</td>
+                        <td class="px-4 py-3">{{ attempt.completion_time_seconds }}s</td>
+                        <td class="px-4 py-3">
+                            <span class="font-semibold {% if attempt.passed %}text-emerald-700{% else %}text-red-700{% endif %}">{% if attempt.passed %}Passed{% else %}Failed{% endif %}</span>
+                        </td>
+                        <td class="px-4 py-3">{{ attempt.completed_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    <tr class="border-t border-zinc-100 bg-zinc-50">
+                        <td colspan="{% if is_instructor %}6{% else %}5{% endif %}" class="px-4 py-3">
+                            <div class="grid gap-2 md:grid-cols-2">
+                                {% for item in attempt.details %}
+                                <div class="rounded-lg border border-zinc-200 bg-white p-3">
+                                    <p class="text-xs font-semibold uppercase text-zinc-500">Question {{ item.question_index|add:1 }}</p>
+                                    <p class="mt-1 text-sm font-medium text-zinc-900">{{ item.prompt }}</p>
+                                    <p class="mt-2 text-xs text-zinc-600">Answer: {{ item.selected_label|default:"No answer" }}</p>
+                                    <p class="text-xs text-zinc-600">Correct: {{ item.correct_label }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{% if is_instructor %}6{% else %}5{% endif %}" class="px-4 py-5 text-zinc-500">No completed quizzes yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}PL Quiz Generator{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
+    <link href="{% static 'quiz/app.css' %}" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-zinc-50 text-zinc-950">
+    <nav class="sticky top-0 z-50 border-b border-zinc-200 bg-white">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <a href="{% url 'quiz:home' %}" class="flex items-center">
+                <span class="text-2xl font-black tracking-wide text-zinc-950">
+                    PR<span class="text-emerald-600">AX</span>IS
+                </span>
+            </a>
+            <div class="flex items-center gap-2">
+                {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                <a href="{% url 'admin:index' %}" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">Admin</a>
+                {% endif %}
+                {% else %}
+                <a href="{% url 'account_login' %}" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">Login</a>
+                <a href="{% url 'account_signup' %}" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="{% if user.is_authenticated %}mx-auto flex w-full max-w-[1600px] flex-col md:flex-row{% endif %}">
+        {% if user.is_authenticated %}
+        <aside class="shrink-0 border-b border-zinc-900 bg-zinc-950 md:sticky md:top-[65px] md:h-[calc(100vh-65px)] md:w-72 md:self-start md:border-b-0 md:border-r md:border-zinc-900">
+            <div class="flex h-full flex-col p-4">
+                <div class="mb-4 rounded-lg bg-zinc-900 p-3">
+                    <p class="text-sm font-semibold text-white">{{ user.username }}</p>
+                    <p class="text-xs text-zinc-400">{% if user.is_staff %}Administrator{% elif user.profile.role == "instructor" %}Instructor{% else %}Student{% endif %}</p>
+                </div>
+                <nav class="grid gap-1 text-sm font-medium">
+                    <a href="{% url 'quiz:home' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">Dashboard</a>
+                    {% if user.is_staff or user.profile.role == "instructor" %}
+                    <a href="{% url 'quiz:create_quiz' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">Create Quiz</a>
+                    {% endif %}
+                    <a href="{% url 'quiz:my_quizzes' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">My Quizzes</a>
+                    <a href="{% url 'quiz:results' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">Results</a>
+                    {% if user.is_staff or user.profile.role == "instructor" %}
+                    <a href="{% url 'quiz:analytics' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">Analytics</a>
+                    {% endif %}
+                    <a href="{% url 'quiz:settings' %}" class="rounded-lg px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-emerald-300">Settings</a>
+                </nav>
+                <form method="post" action="{% url 'account_logout' %}" class="mt-auto border-t border-zinc-800 pt-4">
+                    {% csrf_token %}
+                    <button class="w-full rounded-lg bg-white px-3 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200" type="submit">Logout</button>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+
+        <main class="{% if user.is_authenticated %}min-w-0 flex-1{% endif %}">
+            {% if messages %}
+            <div class="{% if user.is_authenticated %}px-4 pt-4 sm:px-6 lg:px-8{% else %}mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8{% endif %}">
+                {% for message in messages %}
+                <div class="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
