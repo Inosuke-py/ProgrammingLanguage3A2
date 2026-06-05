@@ -1,0 +1,152 @@
+:root {
+    --bg: #0f1720;
+    --panel: #0b1220;
+    --accent: #2dd4bf;
+    --muted: #94a3b8
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Inter, system-ui, Arial, Helvetica, sans-serif
+}
+
+
+/* per-line code highlighting */
+.line { display: block; padding: 2px 6px; }
+.line.current { background: rgba(45,212,191,0.08); border-left: 3px solid var(--accent); }
+.line.executed { opacity: 0.8; }
+.alloc { background: rgba(34,197,94,0.06); }
+.free { background: rgba(239,68,68,0.05); }
+body {
+    margin: 0;
+    background: linear-gradient(180deg, #071029, #081226);
+    color: #e6eef6
+}
+
+header {
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04)
+}
+
+main {
+    padding: 18px;
+    max-width: 1100px;
+    margin: 0 auto
+}
+
+.controls .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px
+}
+
+input,
+select,
+button {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: #071826;
+    color: #e6eef6
+}
+
+button {
+    cursor: pointer
+}
+
+.columns {
+    display: flex;
+    gap: 12px
+}
+
+.panel {
+    flex: 1;
+    background: var(--panel);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.03)
+}
+
+#heap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px
+}
+
+.block {
+    padding: 8px;
+    border-radius: 6px;
+    background: #062635;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    min-width: 120px
+}
+
+.block.freed {
+    opacity: 0.45;
+    text-decoration: line-through
+}
+
+.block .id {
+    font-weight: 700;
+    color: var(--accent)
+}
+
+.log {
+    height: 220px;
+    overflow: auto;
+    background: #061322;
+    padding: 8px;
+    border-radius: 6px
+}
+
+.notes {
+    margin-top: 12px;
+    color: var(--muted)
+}
+
+.pointer {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: #042233;
+    border-radius: 6px;
+    margin-bottom: 6px
+}
+
+.pointer .dang {
+    color: #ff7b72;
+    font-weight: 700
+}
+
+/* Language selector and code viewer */
+.language-select {
+    margin: 14px 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.code-viewer {
+    background: #041325;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 220px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.code {
+    white-space: pre-wrap;
+    font-family: Menlo, Monaco, monospace;
+    color: #dbeafe;
+    margin: 0;
+}
+
+.blank {
+    color: rgba(255, 255, 255, 0.06);
+}
+
+.hidden {
+    display: none;
+}

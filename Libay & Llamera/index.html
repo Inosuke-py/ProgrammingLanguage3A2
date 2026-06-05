@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Memory Management Simulator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <header>
+        <h1>Memory Management Simulator</h1>
+        <p>Simulate Dynamic Memory Allocation and Garbage Collection</p>
+    </header>
+    <main>
+        <section class="language-select">
+            <label for="langSelect">Select Programming Language:</label>
+            <select id="langSelect">
+                <option value="" selected>-- choose language --</option>
+            </select>
+        </section>
+
+        <section class="code-viewer">
+            <pre id="codeViewer" class="code blank"><!-- code will appear here after selection --></pre>
+        </section>
+
+        <section id="simControls" class="controls hidden">
+            <div class="row">
+                <button id="mallocBtn">malloc()</button>
+                <button id="freeBtn">free()</button>
+                <button id="autoGcToggle">Auto GC: Off</button>
+                <button id="forceRcGc">Run Ref-Count GC</button>
+                <button id="forceMsGc">Run Mark-&-Sweep GC</button>
+                <button id="stepBtn">Step</button>
+                <button id="playBtn">Play</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </section>
+
+        <section class="visual">
+            <div class="columns">
+                <div class="panel">
+                    <h2>Pointers</h2>
+                    <ul id="pointersList"></ul>
+                </div>
+                <div class="panel">
+                    <h2>Heap</h2>
+                    <div id="heap"></div>
+                </div>
+                <div class="panel">
+                    <h2>Log</h2>
+                    <div id="log" class="log"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="notes">
+            <h3>Notes</h3>
+            <ul>
+                <li>Reference counting immediately reclaims objects when refCount reaches 0.</li>
+                <li>Mark-and-sweep finds unreachable objects from root pointers.</li>
+                <li>Freeing a block without removing pointers creates dangling pointers.</li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

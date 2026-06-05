@@ -1,7 +1,7 @@
 # Programming Language 3A2 Section Projects
 
-Compiled on 2026-06-01 21:48.
-5 of 5 pairs have a repository linked.
+Compiled on 2026-06-05 22:19.
+7 of 7 pairs have a repository linked.
 
 Each pair has its own folder. Folders are plain snapshots of the team's
 repository at sync time, no nested git history.
@@ -20,6 +20,14 @@ repository at sync time, no nested git history.
 ### [Corminal & Reyes](./Corminal & Reyes/)
 
 - Source: [https://github.com/mcorminal-wq/Language_Feature_Corminal](https://github.com/mcorminal-wq/Language_Feature_Corminal)
+
+### [Libay & Llamera](./Libay & Llamera/)
+
+- Source: [https://github.com/fredrichasthehighground69/libay_llamera_finals](https://github.com/fredrichasthehighground69/libay_llamera_finals)
+
+### [Marabe & Arguillas](./Marabe & Arguillas/)
+
+- Source: [https://github.com/bia-bash/Language-Features-/tree/main/Marabe_Language](https://github.com/bia-bash/Language-Features-/tree/main/Marabe_Language)
 
 ### [Quima & Etrata](./Quima & Etrata/)
 
