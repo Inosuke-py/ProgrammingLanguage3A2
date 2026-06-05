@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦆 DuckTrace — Interactive Programming Language Concepts Lab</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">P</div>
+        <div class="brand-text">
+          <div class="brand-name">🦆 DuckTrace</div>
+          <div class="brand-sub">Programming Language Concepts Lab</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Language Features</div>
+      <button class="tab active" data-tab="duck" role="tab"><span class="tab-icon" aria-hidden="true"></span>Duck Typing</button>
+      <button class="tab" data-tab="poly" role="tab"><span class="tab-icon" aria-hidden="true"></span>Polymorphism</button>
+      <button class="tab" data-tab="typing" role="tab"><span class="tab-icon" aria-hidden="true"></span>Static vs Dynamic Typing</button>
+      <button class="tab" data-tab="strength" role="tab"><span class="tab-icon" aria-hidden="true"></span>Strong vs Weak Typing</button>
+    </aside>
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-copy">
+          <div class="topbar-brand">🦆 DuckTrace</div>
+          <div class="topbar-meta">Interactive Programming Language Concepts Lab</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-status-group">
+          <span class="kbd-hint">Run with Ctrl/⌘ + Enter</span>
+          <div id="pyodide-status" class="status loading">
+            <span class="dot"></span>
+            <span class="status-text">Booting Python…</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main">
+      <section class="hero-surface" aria-label="Overview">
+        <div class="hero-copy">
+          <div class="hero-kicker">Programming Language Concepts Lab</div>
+          <h1>🦆 DuckTrace</h1>
+          <p class="hero-subtitle">See your Python one step at a time.</p>
+          <p class="hero-description">A focused simulator for the core ideas behind Pythons type system behavior, runtime flexibility, and type strictness.</p>
+          <div class="hero-tags" aria-label="Feature tags">
+            <span class="hero-tag">Duck Typing</span>
+            <span class="hero-tag">Polymorphism</span>
+            <span class="hero-tag">Static vs Dynamic</span>
+            <span class="hero-tag">Strong vs Weak</span>
+          </div>
+        </div>
+        <div class="hero-stats" aria-label="Platform highlights">
+          <div class="hero-stat-card">
+            <span class="hero-stat-label">Focus</span>
+            <strong class="hero-stat-value">4 concepts</strong>
+            <span class="hero-stat-detail">No extra clutter, just the essentials.</span>
+          </div>
+          <div class="hero-stat-card">
+            <span class="hero-stat-label">Runtime</span>
+            <strong class="hero-stat-value">In-browser</strong>
+            <span class="hero-stat-detail">Pyodide + CodeMirror for live execution.</span>
+          </div>
+          <div class="hero-stat-card">
+            <span class="hero-stat-label">Flow</span>
+            <strong class="hero-stat-value">Run + trace</strong>
+            <span class="hero-stat-detail">Step through behavior and compare outcomes.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel active" id="tab-duck" data-title="Duck Typing">
+        <div class="explainer">
+          <div class="explainer-heading-row">
+            <div>
+              <div class="section-eyebrow">Type Systems</div>
+              <h2>Duck Typing</h2>
+            </div>
+            <span class="section-pill">Behavior over inheritance</span>
+          </div>
+          <p>
+            Python checks whether an object supports the behavior a function expects. If it quacks like a duck, it can be used like one, even without sharing a class.
+          </p>
+          <div class="example-picker">
+            <label for="duck-examples">Example</label>
+            <select id="duck-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="duck">Reset</button>
+          </div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="duck">Run</button>
+                <button class="btn trace" data-trace="duck">Trace</button>
+              </span>
+            </div>
+            <textarea id="duck-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Runtime output</span>
+              <button class="btn ghost" data-clear="duck">Clear</button>
+            </div>
+            <pre id="duck-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Conceptual note:</strong> duck typing teaches that interface compatibility matters more than nominal type inheritance.
+        </div>
+      </section>
+
+      <section class="panel" id="tab-poly" data-title="Polymorphism">
+        <div class="explainer">
+          <div class="explainer-heading-row">
+            <div>
+              <div class="section-eyebrow">Type Systems</div>
+              <h2>Polymorphism</h2>
+            </div>
+            <span class="section-pill">One interface, many forms</span>
+          </div>
+          <p>
+            The same method name can behave differently across objects. Python allows this through method overriding, operator overloading, and flexible data structures.
+          </p>
+          <div class="example-picker">
+            <label for="poly-examples">Example</label>
+            <select id="poly-examples"></select>
+            <button class="btn ghost" data-action="reset" data-target="poly">Reset</button>
+          </div>
+        </div>
+
+        <div class="lab">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>main.py</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="poly">Run</button>
+                <button class="btn trace" data-trace="poly">Trace</button>
+              </span>
+            </div>
+            <textarea id="poly-code"></textarea>
+          </div>
+          <div class="output-pane">
+            <div class="pane-header">
+              <span>Runtime output</span>
+              <button class="btn ghost" data-clear="poly">Clear</button>
+            </div>
+            <pre id="poly-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Polymorphism flavors:</strong> method overriding, operator overloading, and generic behavior across different object types.
+        </div>
+      </section>
+
+      <section class="panel" id="tab-typing" data-title="Static vs Dynamic Typing">
+        <div class="explainer">
+          <div class="explainer-heading-row">
+            <div>
+              <div class="section-eyebrow">Type Systems</div>
+              <h2>Static vs Dynamic Typing</h2>
+            </div>
+            <span class="section-pill">When checking happens</span>
+          </div>
+          <p>
+            Static typing catches problems during compilation or analysis. Dynamic typing defers type checks until execution, making code more flexible but shifting error discovery to runtime.
+          </p>
+          <div class="example-picker">
+            <label for="typing-examples">Scenario</label>
+            <select id="typing-examples"></select>
+          </div>
+        </div>
+
+        <div class="compare">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>Python (dynamic)</span>
+              <span class="badge badge-dynamic">Dynamic runtime</span>
+            </div>
+            <div class="pane-header subheader">
+              <span>Run and trace execution</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="typing">Run</button>
+                <button class="btn trace" data-trace="typing">Trace</button>
+              </span>
+            </div>
+            <textarea id="typing-py-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Python output</span>
+              <button class="btn ghost" data-clear="typing">Clear</button>
+            </div>
+            <pre id="typing-output" class="output"></pre>
+          </div>
+
+          <div class="editor-pane static-pane">
+            <div class="pane-header">
+              <span>Java (static)</span>
+              <span class="badge badge-static">Static check</span>
+            </div>
+            <textarea id="typing-java-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Static analyzer report</span>
+            </div>
+            <pre id="typing-static-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Compare the axes:</strong> static versus dynamic answers when type checking occurs, not how strict the language is about implicit conversions.
+        </div>
+      </section>
+
+      <section class="panel" id="tab-strength" data-title="Strong vs Weak Typing">
+        <div class="explainer">
+          <div class="explainer-heading-row">
+            <div>
+              <div class="section-eyebrow">Type Systems</div>
+              <h2>Strong vs Weak Typing</h2>
+            </div>
+            <span class="section-pill">Type coercion behavior</span>
+          </div>
+          <p>
+            Strong typing rejects silent type mixing. Weak typing often coerces values automatically, which can make code shorter but less predictable.
+          </p>
+          <div class="example-picker">
+            <label for="strength-examples">Scenario</label>
+            <select id="strength-examples"></select>
+          </div>
+        </div>
+
+        <div class="compare">
+          <div class="editor-pane">
+            <div class="pane-header">
+              <span>Python (strong)</span>
+              <span class="badge badge-dynamic">Strong typing</span>
+            </div>
+            <div class="pane-header subheader">
+              <span>Run and trace execution</span>
+              <span class="btn-group">
+                <button class="btn run" data-run="strength">Run</button>
+                <button class="btn trace" data-trace="strength">Trace</button>
+              </span>
+            </div>
+            <textarea id="strength-py-code"></textarea>
+            <div class="pane-header subheader">
+              <span>Python output</span>
+              <button class="btn ghost" data-clear="strength">Clear</button>
+            </div>
+            <pre id="strength-output" class="output"></pre>
+          </div>
+
+          <div class="editor-pane static-pane">
+            <div class="pane-header">
+              <span>JavaScript (weak)</span>
+              <span class="badge badge-warning">Weak coercion</span>
+            </div>
+            <textarea id="strength-js-code"></textarea>
+            <div class="pane-header subheader">
+              <span>JavaScript output</span>
+            </div>
+            <pre id="strength-js-output" class="output"></pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Keep the axes separate:</strong> strong versus weak describes coercion, while static versus dynamic describes when type checking happens.
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        Built with Pyodide and CodeMirror. Python runs locally in the browser.
+      </footer>
+    </main>
+  </div>
+
+  <script src="examples.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

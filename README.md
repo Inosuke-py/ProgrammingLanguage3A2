@@ -1,7 +1,7 @@
 # Programming Language 3A2 Section Projects
 
-Compiled on 2026-06-05 22:19.
-7 of 7 pairs have a repository linked.
+Compiled on 2026-06-05 22:20.
+7 of 8 pairs have a repository linked.
 
 Each pair has its own folder. Folders are plain snapshots of the team's
 repository at sync time, no nested git history.
@@ -27,7 +27,7 @@ repository at sync time, no nested git history.
 
 ### [Marabe & Arguillas](./Marabe & Arguillas/)
 
-- Source: [https://github.com/bia-bash/Language-Features-/tree/main/Marabe_Language](https://github.com/bia-bash/Language-Features-/tree/main/Marabe_Language)
+- Source: [https://github.com/bia-bash/Language-Features-](https://github.com/bia-bash/Language-Features-)
 
 ### [Quima & Etrata](./Quima & Etrata/)
 
@@ -37,3 +37,7 @@ repository at sync time, no nested git history.
 
 - Source: [https://github.com/gruperez-hash/Pyrism](https://github.com/gruperez-hash/Pyrism)
 - Notes: Pyrism
+
+## Pending submission
+
+- Arbois & Orsolino (Pending submission)
