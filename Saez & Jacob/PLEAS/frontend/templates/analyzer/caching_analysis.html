@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+
+{% block title %}
+Inline Caching Analysis
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3 class="fw-bold">
+                <i class="bi bi-database me-2 text-success"></i>
+                Inline Caching Analysis
+            </h3>
+
+            <p class="text-muted mb-0">
+                {{ submission.title }}
+            </p>
+        </div>
+
+        <a href="{% url 'analysis_select' submission.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+
+    </div>
+
+    {% if results.success %}
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-success">
+
+                <div class="stat-value">
+                    {{ results.cache_stats.efficiency }}%
+                </div>
+
+                <div class="stat-label">
+                    Cache Efficiency
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-primary">
+
+                <div class="stat-value">
+                    {{ results.cache_stats.cache_hits }}
+                </div>
+
+                <div class="stat-label">
+                    Cache Hits
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-danger">
+
+                <div class="stat-value">
+                    {{ results.cache_stats.cache_misses }}
+                </div>
+
+                <div class="stat-label">
+                    Cache Misses
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-warning">
+
+                <div class="stat-value">
+                    {{ results.before_after.improvement_percent }}%
+                </div>
+
+                <div class="stat-label">
+                    Performance Gain
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+
+        <!-- Hit/Miss Chart -->
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    Cache Hit vs Miss Ratio
+                </div>
+
+                <div class="card-body">
+                    <canvas id="hitMissChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Before/After Chart -->
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    Execution Performance Comparison
+                </div>
+
+                <div class="card-body">
+                    <canvas id="beforeAfterChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Metrics + Property Access -->
+    <div class="row g-4">
+
+        <!-- Efficiency Metrics -->
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Efficiency Metrics
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-hover align-middle">
+
+                        <tbody>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Hit Rate
+                                </td>
+
+                                <td width="50%">
+
+                                    <div class="progress">
+
+                                        <div class="progress-bar bg-success"
+                                             style="width: {{ results.efficiency_metrics.hit_rate }}%">
+
+                                            {{ results.efficiency_metrics.hit_rate }}%
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Miss Rate
+                                </td>
+
+                                <td>
+
+                                    <div class="progress">
+
+                                        <div class="progress-bar bg-danger"
+                                             style="width: {{ results.efficiency_metrics.miss_rate }}%">
+
+                                            {{ results.efficiency_metrics.miss_rate }}%
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Avg Hit Time
+                                </td>
+
+                                <td>
+                                    {{ results.efficiency_metrics.avg_hit_time_ns }} ns
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Avg Miss Time
+                                </td>
+
+                                <td>
+                                    {{ results.efficiency_metrics.avg_miss_time_ns }} ns
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Unique Properties
+                                </td>
+
+                                <td>
+                                    {{ results.cache_stats.unique_properties }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    Total Lookups
+                                </td>
+
+                                <td>
+                                    {{ results.cache_stats.total_lookups }}
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Property Access Log -->
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <i class="bi bi-list-check me-2"></i>
+                    Property Access Log
+                </div>
+
+                <div class="card-body p-0">
+
+                    <div style="max-height:400px; overflow:auto;">
+
+                        <table class="table table-striped table-hover table-sm mb-0">
+
+                            <thead class="table-dark sticky-top">
+
+                                <tr>
+                                    <th>Object</th>
+                                    <th>Property</th>
+                                    <th>Line</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for access in results.property_accesses %}
+
+                                <tr>
+
+                                    <td>
+                                        <code>{{ access.object }}</code>
+                                    </td>
+
+                                    <td>
+                                        <code>{{ access.property }}</code>
+                                    </td>
+
+                                    <td>
+                                        {{ access.line }}
+                                    </td>
+
+                                </tr>
+
+                                {% empty %}
+
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">
+                                        No property accesses detected
+                                    </td>
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Cache Timeline -->
+    <div class="card shadow-sm mt-4 mb-5">
+
+        <div class="card-header">
+            <i class="bi bi-clock-history me-2"></i>
+            Cache Access Timeline
+        </div>
+
+        <div class="card-body p-0">
+
+            <div style="max-height:450px; overflow:auto;">
+
+                <table class="table table-striped table-hover table-sm mb-0">
+
+                    <thead class="table-dark sticky-top">
+
+                        <tr>
+                            <th>#</th>
+                            <th>Cache Key</th>
+                            <th>Result</th>
+                            <th>Lookup Time (ns)</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for entry in results.access_log %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+                            <td>
+                                <code>{{ entry.key }}</code>
+                            </td>
+
+                            <td>
+
+                                {% if entry.type == 'HIT' %}
+
+                                <span class="badge bg-success">
+                                    HIT
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+                                    MISS
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ entry.time_ns }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                No cache access logs available
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <!-- Error -->
+    <div class="alert alert-danger">
+
+        <i class="bi bi-exclamation-triangle me-2"></i>
+
+        {{ results.error }}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+{% if results.success %}
+
+/* =========================================
+   Cache Hit/Miss Doughnut Chart
+========================================= */
+
+createDoughnutChart(
+    'hitMissChart',
+    ['Cache Hits', 'Cache Misses'],
+    [
+        {{ results.cache_stats.cache_hits }},
+        {{ results.cache_stats.cache_misses }}
+    ],
+    'Cache Hit vs Miss Ratio'
+);
+
+
+/* =========================================
+   Before vs After Caching Chart
+========================================= */
+
+createBarChart(
+    'beforeAfterChart',
+    ['Without Cache', 'With Cache'],
+    [
+        {{ results.before_after.without_cache_ms }},
+        {{ results.before_after.with_cache_ms }}
+    ],
+    'Execution Time Comparison (ms)',
+    [
+        'rgba(239,68,68,0.7)',
+        'rgba(16,185,129,0.7)'
+    ]
+);
+
+{% endif %}
+
+</script>
+
+{% endblock %}

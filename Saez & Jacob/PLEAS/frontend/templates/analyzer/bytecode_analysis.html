@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+
+{% block title %}
+Bytecode Analysis
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3 class="fw-bold">
+                <i class="bi bi-braces me-2 text-primary"></i>
+                Bytecode Compilation Analysis
+            </h3>
+
+            <p class="text-muted mb-0">
+                {{ submission.title }}
+            </p>
+        </div>
+
+        <a href="{% url 'analysis_select' submission.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+
+    </div>
+
+    {% if results.success %}
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-primary">
+
+                <div class="stat-value">
+                    {{ results.total_instructions }}
+                </div>
+
+                <div class="stat-label">
+                    Total Instructions
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-success">
+
+                <div class="stat-value">
+                    {{ results.compilation_time }} ms
+                </div>
+
+                <div class="stat-label">
+                    Compilation Time
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-warning">
+
+                <div class="stat-value">
+                    {{ results.opcode_frequency|length }}
+                </div>
+
+                <div class="stat-label">
+                    Unique Opcodes
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-info">
+
+                <div class="stat-value">
+                    {{ results.execution_comparison.speedup }}x
+                </div>
+
+                <div class="stat-label">
+                    Compiled Speedup
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Source Code -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <i class="bi bi-file-code me-2"></i>
+                Uploaded / Entered Source Code
+            </span>
+            <span class="badge bg-light text-dark">
+                {{ results.code_object_count }} code objects
+            </span>
+        </div>
+
+        <div class="card-body p-0">
+            <pre class="bg-dark text-light p-3 mb-0"
+                 style="max-height:260px; overflow:auto;">{{ results.source_code }}</pre>
+        </div>
+
+    </div>
+
+    {% if results.execution_comparison.interpreted_error or results.execution_comparison.compiled_error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Benchmark execution captured a runtime error:
+        {% if results.execution_comparison.interpreted_error %}
+        {{ results.execution_comparison.interpreted_error }}
+        {% else %}
+        {{ results.execution_comparison.compiled_error }}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="row g-4">
+
+        <!-- Bytecode Instructions -->
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    <i class="bi bi-terminal me-2"></i>
+                    Bytecode Instructions
+                </div>
+
+                <div class="card-body p-0">
+
+                    <div class="bytecode-display"
+                         style="max-height:600px; overflow:auto;">
+
+                        <table class="table table-dark table-striped table-hover table-sm mb-0">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Offset</th>
+                                    <th>Line</th>
+                                    <th>Opcode</th>
+                                    <th>Arg</th>
+                                    <th>Value</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for instr in results.bytecode_instructions %}
+
+                                <tr>
+
+                                    <td>{{ instr.offset }}</td>
+
+                                    <td>
+                                        {{ instr.line }}
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ instr.opname }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ instr.arg }}</td>
+
+                                    <td>
+                                        {{ instr.argval|truncatechars:50 }}
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-5">
+
+            <!-- Opcode Frequency -->
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header">
+                    Opcode Frequency
+                </div>
+
+                <div class="card-body">
+                    <canvas id="opcodeChart"></canvas>
+                </div>
+
+            </div>
+
+            <!-- Execution Comparison -->
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header">
+                    Execution Comparison
+                </div>
+
+                <div class="card-body">
+                    <canvas id="execCompare"></canvas>
+                </div>
+
+            </div>
+
+            <!-- AST Summary -->
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header">
+                    AST Summary
+                </div>
+
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="h4 fw-bold">{{ results.ast_tree.node_count }}</div>
+                            <div class="small text-muted">AST Nodes</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 fw-bold">{{ results.ast_tree.max_depth }}</div>
+                            <div class="small text-muted">Max Depth</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Constants & Names -->
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+                    Code Objects
+                </div>
+
+                <div class="card-body">
+
+                    <h6 class="fw-bold">
+                        Constants
+                    </h6>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+
+                        {% for c in results.constants %}
+
+                        <span class="badge bg-primary">
+                            {{ c|truncatechars:30 }}
+                        </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <h6 class="fw-bold">
+                        Names
+                    </h6>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        {% for n in results.names %}
+
+                        <span class="badge bg-success">
+                            {{ n }}
+                        </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Execution Flow -->
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-header">
+            <i class="bi bi-diagram-3 me-2"></i>
+            Execution Flow
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <div class="col-lg-7">
+                    <div class="d-flex flex-wrap gap-2"
+                         style="max-height:260px; overflow:auto;">
+
+                        {% for step in results.execution_flow %}
+
+                        <span class="badge bg-dark text-light p-2">
+                            {{ step }}
+                        </span>
+
+                        {% endfor %}
+
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <canvas id="flowChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- AST Tree -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <i class="bi bi-diagram-2 me-2"></i>
+                    AST Top-Level Nodes
+                </div>
+
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Line</th>
+                                <th>Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for node in results.ast_tree.top_level_nodes %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ node.type }}</span></td>
+                                <td>{{ node.line|default:"-" }}</td>
+                                <td><code>{{ node.summary }}</code></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-muted">No AST nodes found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+                    <i class="bi bi-tree me-2"></i>
+                    AST Tree
+                </div>
+
+                <div class="card-body p-0">
+                    <pre class="bg-dark text-light p-3 mb-0"
+                         style="max-height:420px; overflow:auto;">{{ results.ast_tree.dump }}</pre>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Nested Functions -->
+    {% if results.nested_functions %}
+
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-header">
+            <i class="bi bi-diagram-2 me-2"></i>
+            Nested Function Bytecode
+        </div>
+
+        <div class="card-body">
+
+            {% for func in results.nested_functions %}
+
+            <h6 class="fw-bold mt-3">
+
+                {{ func.name }}
+
+                <span class="badge bg-secondary">
+                    {{ func.instruction_count }} instructions
+                </span>
+
+            </h6>
+
+            <pre class="bytecode-display bg-dark text-light p-3 rounded"
+                 style="max-height:300px; overflow:auto;">
+{{ func.bytecode }}
+            </pre>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <!-- All Code Object Bytecode -->
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-header">
+            <i class="bi bi-stack me-2"></i>
+            Bytecode Compilation for All Code Objects
+        </div>
+
+        <div class="card-body">
+
+            <div class="accordion" id="codeObjectBytecode">
+
+                {% for obj in results.code_objects %}
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#codeObject{{ forloop.counter }}">
+                            {{ obj.qualified_name }}
+                            <span class="badge bg-secondary ms-2">
+                                {{ obj.type }}
+                            </span>
+                            <span class="badge bg-primary ms-2">
+                                {{ obj.instruction_count }} instructions
+                            </span>
+                        </button>
+                    </h2>
+                    <div id="codeObject{{ forloop.counter }}"
+                         class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                         data-bs-parent="#codeObjectBytecode">
+                        <div class="accordion-body p-0">
+                            <pre class="bytecode-display bg-dark text-light p-3 mb-0"
+                                 style="max-height:360px; overflow:auto;">{{ obj.bytecode }}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Raw Disassembly -->
+    <div class="card shadow-sm mt-4 mb-5">
+
+        <div class="card-header">
+            <i class="bi bi-code-slash me-2"></i>
+            Raw Disassembly
+        </div>
+
+        <div class="card-body">
+
+            <pre class="bg-dark text-light p-3 rounded"
+                 style="max-height:500px; overflow:auto;">
+{{ results.raw_disassembly }}
+            </pre>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <!-- Error -->
+    <div class="alert alert-danger">
+
+        <i class="bi bi-exclamation-triangle me-2"></i>
+
+        {{ results.error }}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+{% if results.success %}
+
+/* =========================================
+   Opcode Frequency Chart
+========================================= */
+
+const opcodeData =
+    {{ results.opcode_frequency|to_json|safe }};
+
+const opcodeLabels =
+    Object.keys(opcodeData).slice(0, 15);
+
+const opcodeValues =
+    Object.values(opcodeData).slice(0, 15);
+
+createBarChart(
+    'opcodeChart',
+    opcodeLabels,
+    opcodeValues,
+    'Opcode Frequency Distribution',
+    opcodeValues.map(
+        (_, i) =>
+        `hsl(${(i * 25) % 360}, 70%, 55%)`
+    )
+);
+
+
+/* =========================================
+   Execution Comparison Chart
+========================================= */
+
+const execData =
+    {{ results.execution_comparison|to_json|safe }};
+
+createBarChart(
+    'execCompare',
+    ['Interpreted', 'Compiled'],
+    [
+        execData.interpreted_ms,
+        execData.compiled_ms
+    ],
+    'Execution Time Comparison (ms)',
+    [
+        'rgba(239,68,68,0.7)',
+        'rgba(16,185,129,0.7)'
+    ]
+);
+
+/* =========================================
+   AST Node Frequency Chart
+========================================= */
+
+const astNodes =
+    {{ results.ast_tree.node_frequency|to_json|safe }};
+
+createBarChart(
+    'astNodeChart',
+    Object.keys(astNodes).slice(0, 10),
+    Object.values(astNodes).slice(0, 10),
+    'AST Node Frequency',
+    'rgba(14,165,233,0.72)'
+);
+
+
+/* =========================================
+   Execution Flow Edge Chart
+========================================= */
+
+const flowEdges =
+    {{ results.flow_edges|to_json|safe }};
+
+const edgeCounts = flowEdges.reduce((acc, edge) => {
+    acc[edge.type] = (acc[edge.type] || 0) + 1;
+    return acc;
+}, {});
+
+createBarChart(
+    'flowChart',
+    Object.keys(edgeCounts),
+    Object.values(edgeCounts),
+    'Execution Flow Edges',
+    ['#4f46e5', '#f59e0b', '#10b981']
+);
+
+{% endif %}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Select Analysis{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <div class="mb-4">
+        <h3 class="fw-bold"><i class="bi bi-layers me-2 text-primary"></i>Select Analysis Module</h3>
+        <p class="text-muted mb-1">Submission: <strong>{{ submission.title }}</strong> ({{ submission.language }})</p>
+        <small class="text-muted">Choose one or more analysis modules to run on your code.</small>
+    </div>
+
+    <!-- Source Code Preview -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between">
+            <span><i class="bi bi-code me-2"></i>Code Preview</span>
+            <span class="badge bg-secondary">{{ submission.source_code|length }} chars</span>
+        </div>
+        <div class="card-body p-0">
+            <pre class="bytecode-display mb-0" style="max-height:200px;">{{ submission.source_code }}</pre>
+        </div>
+    </div>
+
+    <!-- Code Output Preview -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-terminal me-2"></i>Code Output</span>
+            {% if code_output.stderr %}
+            <span class="badge bg-danger">Runtime Error</span>
+            {% elif code_output.has_output %}
+            <span class="badge bg-success">Captured</span>
+            {% else %}
+            <span class="badge bg-secondary">No Output</span>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            {% if code_output.stdout %}
+            <pre class="bg-dark text-light p-3 mb-0" style="max-height:220px;overflow:auto;">{{ code_output.stdout }}</pre>
+            {% endif %}
+
+            {% if code_output.stderr %}
+            <pre class="bg-danger-subtle text-danger p-3 mb-0" style="max-height:220px;overflow:auto;">{{ code_output.stderr }}</pre>
+            {% endif %}
+
+            {% if not code_output.has_output %}
+            <div class="p-3 text-muted">
+                This code did not print output during preview execution.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Module Selection Grid -->
+    <div class="row g-3">
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'bytecode_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-blue"><i class="bi bi-braces"></i></div>
+                <h6>Bytecode Compilation</h6>
+                <p>Convert to bytecode, opcode analysis, execution flow</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'caching_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-green"><i class="bi bi-database"></i></div>
+                <h6>Inline Caching</h6>
+                <p>Cache hits/misses, efficiency metrics, lookup optimization</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'optimization_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-purple"><i class="bi bi-gear"></i></div>
+                <h6>Compiler Optimization</h6>
+                <p>Constant folding, dead code, loop unrolling, inlining</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'hotpath_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-orange"><i class="bi bi-fire"></i></div>
+                <h6>Hot Path Detection</h6>
+                <p>Profiling, call frequency, bottleneck detection</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'runtime_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-teal"><i class="bi bi-speedometer2"></i></div>
+                <h6>Runtime Efficiency</h6>
+                <p>Execution time, CPU usage, throughput, benchmarks</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'concurrency_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-indigo"><i class="bi bi-diagram-3"></i></div>
+                <h6>Concurrency & Parallelism</h6>
+                <p>Threading, multiprocessing, async, race conditions</p>
+            </a>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'memory_analysis' submission.pk %}" class="module-card">
+                <div class="module-icon bg-grad-red"><i class="bi bi-memory"></i></div>
+                <h6>Memory Analysis</h6>
+                <p>Heap, stack, object allocation, garbage collection</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'submissions_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Submissions
+        </a>
+    </div>
+</div>
+{% endblock %}

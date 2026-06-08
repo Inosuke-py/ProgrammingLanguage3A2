@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+
+{% block title %}Hot Path Detection{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-panel {
+        min-height: 320px;
+    }
+
+    .timeline-list {
+        max-height: 360px;
+        overflow-y: auto;
+    }
+
+    .timeline-item {
+        border-left: 4px solid #f59e0b;
+        padding-left: 1rem;
+    }
+
+    .hot-line {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.84rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .frequency-meter {
+        height: 0.55rem;
+        background: #fee2e2;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .frequency-meter span {
+        display: block;
+        height: 100%;
+        background: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold">
+                <i class="bi bi-fire me-2" style="color:#f59e0b;"></i>
+                Hot Path Detection & Profiling
+            </h3>
+            <p class="text-muted mb-0">{{ submission.title }}</p>
+        </div>
+        <a href="{% url 'analysis_select' submission.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    {% if results.success %}
+
+    {% if results.runtime_error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Profiling stopped after runtime error:
+        {{ results.runtime_error }}
+    </div>
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#f59e0b;">
+                <div class="stat-value">{{ results.total_time }} ms</div>
+                <div class="stat-label">Total Runtime</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#4f46e5;">
+                <div class="stat-value">{{ results.total_calls }}</div>
+                <div class="stat-label">Function Calls</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#ef4444;">
+                <div class="stat-value">{{ results.dashboard.max_line_executions }}</div>
+                <div class="stat-label">Max Line Executions</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#10b981;">
+                <div class="stat-value">{{ results.bottlenecks|length }}</div>
+                <div class="stat-label">Bottlenecks Found</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Runtime Profiling Dashboard</span>
+                    <span class="badge bg-light text-dark">
+                        {{ results.dashboard.profiled_events }} executed line events
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Executed Lines</div>
+                            <div class="fs-5 fw-semibold">{{ results.dashboard.executed_lines }}</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Unique Functions</div>
+                            <div class="fs-5 fw-semibold">{{ results.dashboard.unique_functions }}</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Hot Functions</div>
+                            <div class="fs-5 fw-semibold">{{ results.hot_functions|length }}</div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Function</th>
+                                    <th>Calls</th>
+                                    <th>Cumulative</th>
+                                    <th>Self Time</th>
+                                    <th>Per Call</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in results.hot_functions %}
+                                <tr>
+                                    <td>
+                                        <code class="text-danger">{{ f.function }}</code>
+                                        <div class="small text-muted">Line {{ f.line }}</div>
+                                    </td>
+                                    <td>{{ f.ncalls }}</td>
+                                    <td>{{ f.cumtime_ms }} ms</td>
+                                    <td>{{ f.tottime_ms }} ms</td>
+                                    <td>{{ f.percall_ms }} ms</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-muted">
+                                        No user-defined hot functions were captured.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Bottleneck Detection
+                </div>
+                <div class="card-body">
+                    {% for b in results.bottlenecks %}
+                    <div class="alert alert-{{ b.severity }} py-2 mb-2">
+                        <div class="fw-semibold">
+                            {{ b.kind }}:
+                            {% if b.kind == 'Function' %}
+                            {{ b.function }}
+                            {% else %}
+                            Line {{ b.line }}
+                            {% endif %}
+                        </div>
+                        <div class="small">
+                            {% if b.time_ms %}
+                            {{ b.time_ms }} ms,
+                            {% endif %}
+                            {{ b.calls }} executions/calls
+                            {% if b.time_share_percent %}
+                            , {{ b.time_share_percent }}% of runtime
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted">{{ b.suggestion }}</div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-check-circle text-success me-1"></i>
+                        No significant bottlenecks detected.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Function Call Frequency Analysis
+                </div>
+                <div class="card-body profile-panel">
+                    <canvas id="callFreqChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Execution Timeline Visualization
+                </div>
+                <div class="card-body profile-panel">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Frequently Executed Code Sections
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Line</th>
+                                    <th>Function</th>
+                                    <th>Executions</th>
+                                    <th>Section</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for section in results.hot_sections %}
+                                <tr>
+                                    <td>{{ section.line }}</td>
+                                    <td><code>{{ section.function }}</code></td>
+                                    <td>
+                                        <span class="fw-semibold">{{ section.executions }}</span>
+                                        <div class="frequency-meter mt-1">
+                                            <span style="width:{% widthratio section.executions results.dashboard.max_line_executions 100 %}%"></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if section.is_loop %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ section.construct }}
+                                        </span>
+                                        <div class="hot-line mt-1">{{ section.source }}</div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-muted">
+                                        No executed source lines were captured.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Recent Execution Timeline
+                </div>
+                <div class="card-body timeline-list">
+                    {% for item in results.execution_timeline %}
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <code>{{ item.function }}</code>
+                            <span class="badge bg-warning text-dark">
+                                {{ item.duration_ms }} ms
+                            </span>
+                        </div>
+                        <div class="small text-muted">
+                            #{{ item.order }}
+                            starts at {{ item.start_ms }} ms,
+                            line {{ item.line }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-0">
+                        No function-return timeline events were captured.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-xl-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Full Profile Statistics
+                </div>
+                <div class="card-body p-0" style="max-height:420px;overflow-y:auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Line</th>
+                                <th>Calls</th>
+                                <th>Self Time</th>
+                                <th>Cumulative</th>
+                                <th>Per Call</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in results.profile_stats %}
+                            <tr>
+                                <td><code>{{ s.function }}</code></td>
+                                <td>{{ s.line }}</td>
+                                <td>{{ s.ncalls }}</td>
+                                <td>{{ s.tottime_ms }} ms</td>
+                                <td>{{ s.cumtime_ms }} ms</td>
+                                <td>{{ s.percall_ms }} ms</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-muted">
+                                    No cProfile records were captured for user code.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Call Relationships
+                </div>
+                <div class="card-body p-0" style="max-height:420px;overflow-y:auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Caller</th>
+                                <th>Callee</th>
+                                <th>Calls</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for edge in results.call_graph %}
+                            <tr>
+                                <td><code>{{ edge.caller }}</code></td>
+                                <td><code>{{ edge.callee }}</code></td>
+                                <td>{{ edge.calls }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-muted">
+                                    No user-code call relationships were captured.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ results.error }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if results.success %}
+const callFreq = {{ results.call_frequency|to_json|safe }};
+const timelineSummary = {{ results.timeline_summary|to_json|safe }};
+
+createBarChart(
+    'callFreqChart',
+    Object.keys(callFreq),
+    Object.values(callFreq),
+    'Function Call Frequency',
+    Object.values(callFreq).map((_, i) => `hsl(${(i * 36) % 360}, 70%, 52%)`)
+);
+
+createBarChart(
+    'timelineChart',
+    timelineSummary.map(item => item.function),
+    timelineSummary.map(item => item.duration_ms),
+    'Cumulative Timeline Duration (ms)',
+    'rgba(245,158,11,0.72)'
+);
+{% endif %}
+</script>
+{% endblock %}

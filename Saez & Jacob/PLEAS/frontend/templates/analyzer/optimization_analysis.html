@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+
+{% block title %}
+Optimization Analysis
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .optimization-code {
+        min-height: 460px;
+        max-height: 640px;
+        overflow: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.86rem;
+        line-height: 1.55;
+        white-space: pre;
+    }
+
+    .diff-table {
+        table-layout: fixed;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.82rem;
+    }
+
+    .diff-table td {
+        white-space: pre-wrap;
+        word-break: break-word;
+        vertical-align: top;
+    }
+
+    .diff-line-no {
+        width: 4.25rem;
+        color: #64748b;
+        text-align: right;
+        user-select: none;
+    }
+
+    .diff-equal td {
+        background: #ffffff;
+    }
+
+    .diff-replace td {
+        background: #fff7ed;
+    }
+
+    .diff-delete td {
+        background: #fef2f2;
+    }
+
+    .diff-insert td {
+        background: #ecfdf5;
+    }
+
+    .pipeline-step {
+        border-left: 4px solid #e2e8f0;
+        padding-left: 1rem;
+        position: relative;
+    }
+
+    .pipeline-step.is-active {
+        border-left-color: #10b981;
+    }
+
+    .chart-panel {
+        min-height: 320px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3 class="fw-bold">
+                <i class="bi bi-lightning-charge me-2 text-warning"></i>
+                Optimizing Compiler & Interpreter
+            </h3>
+
+            <p class="text-muted mb-0">
+                {{ submission.title }}
+            </p>
+        </div>
+
+        <a href="{% url 'analysis_select' submission.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+
+    </div>
+
+    {% if results.success %}
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-primary">
+                <div class="stat-value">
+                    {{ results.metrics.original_time_ms }} ms
+                </div>
+                <div class="stat-label">
+                    Original Avg Runtime
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-success">
+                <div class="stat-value">
+                    {{ results.metrics.optimized_time_ms }} ms
+                </div>
+                <div class="stat-label">
+                    Optimized Avg Runtime
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-warning">
+                <div class="stat-value">
+                    {{ results.metrics.performance_gain_percent }}%
+                </div>
+                <div class="stat-label">
+                    Runtime Improvement
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card border-start border-4 border-info">
+                <div class="stat-value">
+                    {{ results.metrics.ast_node_reduction_percent }}%
+                </div>
+                <div class="stat-label">
+                    AST Node Reduction
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% if results.metrics.benchmark_error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Runtime benchmark could not fully execute:
+        {{ results.metrics.benchmark_error }}
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span>Optimization Impact</span>
+                    <span class="badge bg-light text-dark">
+                        {{ results.optimization_details|length }} code changes
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="small text-muted">Best Runtime</div>
+                            <div class="fw-semibold">
+                                {{ results.metrics.original_best_time_ms }} ms
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                {{ results.metrics.optimized_best_time_ms }} ms
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="small text-muted">Worst Runtime</div>
+                            <div class="fw-semibold">
+                                {{ results.metrics.original_worst_time_ms }} ms
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                {{ results.metrics.optimized_worst_time_ms }} ms
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="small text-muted">Source Lines</div>
+                            <div class="fw-semibold">
+                                {{ results.metrics.original_lines }}
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                {{ results.metrics.optimized_lines }}
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="small text-muted">AST Nodes</div>
+                            <div class="fw-semibold">
+                                {{ results.metrics.original_ast_nodes }}
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                {{ results.metrics.optimized_ast_nodes }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for opt in results.optimizations_applied %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle p-2">
+                            {{ opt }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Compiler Pipeline
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        {% for step in results.compiler_pipeline %}
+                        <div class="pipeline-step {% if step.changes > 0 %}is-active{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">{{ step.name }}</span>
+                                <span class="badge {% if step.changes > 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ step.changes }}
+                                </span>
+                            </div>
+                            <div class="small text-muted">
+                                Nodes:
+                                {{ step.before_nodes }}
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                {{ step.after_nodes }}
+                                {% if step.nodes_delta %}
+                                ({{ step.nodes_delta }})
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    Original Uploaded Source
+                </div>
+                <div class="card-body p-0">
+<pre class="bg-dark text-light p-3 mb-0 optimization-code">{{ results.original_code }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    Generated Optimized Code
+                </div>
+                <div class="card-body p-0">
+<pre class="bg-dark text-light p-3 mb-0 optimization-code">{{ results.optimized_code }}</pre>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Original vs Optimized Diff
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm diff-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="diff-line-no">Line</th>
+                        <th>Original</th>
+                        <th class="diff-line-no">Line</th>
+                        <th>Optimized</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.code_comparison %}
+                    <tr class="diff-{{ row.status }}">
+                        <td class="diff-line-no">{{ row.original_line_no|default:"" }}</td>
+                        <td>{{ row.original }}</td>
+                        <td class="diff-line-no">{{ row.optimized_line_no|default:"" }}</td>
+                        <td>{{ row.optimized }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Optimization Decisions
+                </div>
+                <div class="card-body">
+                    {% if results.optimization_details %}
+                    <div class="accordion" id="optimizationDetails">
+                        {% for detail in results.optimization_details %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#optDetail{{ forloop.counter }}">
+                                    {{ detail.optimization }}
+                                    {% if detail.line %}
+                                    <span class="badge bg-light text-dark ms-2">
+                                        Line {{ detail.line }}
+                                    </span>
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="optDetail{{ forloop.counter }}"
+                                 class="accordion-collapse collapse"
+                                 data-bs-parent="#optimizationDetails">
+                                <div class="accordion-body">
+                                    <div class="small text-muted mb-2">
+                                        {{ detail.impact }}
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="small fw-semibold mb-1">Before</div>
+<pre class="bg-light border rounded p-2 mb-0">{{ detail.before }}</pre>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="small fw-semibold mb-1">After</div>
+<pre class="bg-light border rounded p-2 mb-0">{{ detail.after }}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">
+                        No semantic-preserving optimizations were detected for this source.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Runtime Performance
+                </div>
+                <div class="card-body chart-panel">
+                    <canvas id="runtimeRunsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Average Runtime Comparison
+                </div>
+                <div class="card-body chart-panel">
+                    <canvas id="runtimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Compiler Optimization Visualizations
+                </div>
+                <div class="card-body chart-panel">
+                    <canvas id="astNodeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ results.error }}
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+{% if results.success %}
+const runtimeRuns =
+    {{ results.visualizations.runtime_runs|to_json|safe }};
+const astNodes =
+    {{ results.visualizations.ast_nodes|to_json|safe }};
+
+createBarChart(
+    'runtimeChart',
+    ['Original', 'Optimized'],
+    [
+        {{ results.metrics.original_time_ms }},
+        {{ results.metrics.optimized_time_ms }}
+    ],
+    'Average Runtime Impact (ms)',
+    [
+        'rgba(239,68,68,0.72)',
+        'rgba(16,185,129,0.72)'
+    ]
+);
+
+createLineChart(
+    'runtimeRunsChart',
+    runtimeRuns.labels,
+    [
+        {
+            label: 'Original',
+            data: runtimeRuns.original,
+            borderColor: 'rgba(239,68,68,1)',
+            backgroundColor: 'rgba(239,68,68,0.12)',
+            fill: true
+        },
+        {
+            label: 'Optimized',
+            data: runtimeRuns.optimized,
+            borderColor: 'rgba(16,185,129,1)',
+            backgroundColor: 'rgba(16,185,129,0.12)',
+            fill: true
+        }
+    ],
+    'Benchmark Runs (ms)'
+);
+
+new Chart(
+    document.getElementById('astNodeChart').getContext('2d'),
+    {
+        type: 'bar',
+        data: {
+            labels: astNodes.map(item => item.node_type),
+            datasets: [
+                {
+                    label: 'Original AST',
+                    data: astNodes.map(item => item.original),
+                    backgroundColor: 'rgba(59,130,246,0.72)'
+                },
+                {
+                    label: 'Optimized AST',
+                    data: astNodes.map(item => item.optimized),
+                    backgroundColor: 'rgba(16,185,129,0.72)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'AST Node Composition Before and After',
+                    font: { size: 14, weight: '600' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#e2e8f0' }
+                },
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 60,
+                        minRotation: 0
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    }
+);
+{% endif %}
+</script>
+
+{% endblock %}

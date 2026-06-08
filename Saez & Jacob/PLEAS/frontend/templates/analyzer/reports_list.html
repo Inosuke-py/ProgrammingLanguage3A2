@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}My Reports{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Analysis Reports</h3>
+        <a href="{% url 'code_input' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>New Analysis
+        </a>
+    </div>
+
+    {% if reports %}
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover table-analysis mb-0">
+                <thead>
+                    <tr>
+                        <th>Analysis Type</th>
+                        <th>Submission</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td><span class="badge bg-primary-soft report-badge">{{ report.get_analysis_type_display }}</span></td>
+                        <td><strong>{{ report.submission.title }}</strong></td>
+                        <td>{{ report.created_at|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-bar-chart" style="font-size:3rem;color:#94a3b8;"></i>
+        <p class="text-muted mt-3">No reports yet. Run an analysis to generate one!</p>
+        <a href="{% url 'code_input' %}" class="btn btn-primary">Start Analysis</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

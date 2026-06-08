@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Dashboard</h3>
+            <p class="text-muted mb-0">Welcome back, <strong>{{ user.username }}</strong>!</p>
+        </div>
+        <a href="{% url 'code_input' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>New Analysis
+        </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card" style="border-left-color: var(--primary);">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary-soft me-3"><i class="bi bi-code-slash"></i></div>
+                    <div>
+                        <div class="stat-value">{{ total_submissions }}</div>
+                        <div class="stat-label">Submissions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card" style="border-left-color: var(--success);">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success-soft me-3"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                    <div>
+                        <div class="stat-value">{{ total_reports }}</div>
+                        <div class="stat-label">Reports</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card" style="border-left-color: var(--warning);">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning-soft me-3"><i class="bi bi-lightning"></i></div>
+                    <div>
+                        <div class="stat-value">{{ analysis_types_count|length }}</div>
+                        <div class="stat-label">Module Types Used</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card" style="border-left-color: var(--accent);">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-accent-soft me-3"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <div class="stat-value">{{ user.get_role_display }}</div>
+                        <div class="stat-label">Account Type</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions - Module Grid -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-grid me-2"></i>Analysis Modules</h5>
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-blue"><i class="bi bi-braces"></i></div>
+                <h6>Bytecode Analysis</h6>
+                <p>Compile & analyze bytecode instructions</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-green"><i class="bi bi-database"></i></div>
+                <h6>Inline Caching</h6>
+                <p>Simulate property lookup caching</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-purple"><i class="bi bi-gear"></i></div>
+                <h6>Optimization</h6>
+                <p>Compiler optimizations & impact</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-orange"><i class="bi bi-fire"></i></div>
+                <h6>Hot Path Detection</h6>
+                <p>Runtime profiling & bottlenecks</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-teal"><i class="bi bi-speedometer2"></i></div>
+                <h6>Runtime Efficiency</h6>
+                <p>Benchmarks & performance metrics</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-indigo"><i class="bi bi-diagram-3"></i></div>
+                <h6>Concurrency</h6>
+                <p>Threading & parallelism analysis</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'code_input' %}" class="module-card">
+                <div class="module-icon bg-grad-red"><i class="bi bi-memory"></i></div>
+                <h6>Memory Analysis</h6>
+                <p>Heap, stack & GC profiling</p>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{% url 'suitability_analysis' %}" class="module-card">
+                <div class="module-icon bg-grad-cyan"><i class="bi bi-stars"></i></div>
+                <h6>Suitability Engine</h6>
+                <p>Language recommendations</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history me-2"></i>Recent Submissions</span>
+                    <a href="{% url 'submissions_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if submissions %}
+                    <div class="list-group list-group-flush">
+                        {% for sub in submissions %}
+                        <a href="{% url 'analysis_select' sub.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ sub.title }}</strong>
+                                <br><small class="text-muted">{{ sub.language }} &middot; {{ sub.created_at|date:"M d, H:i" }}</small>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox" style="font-size:2rem;"></i>
+                        <p class="mt-2 mb-0">No submissions yet. Start by submitting code!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-graph-up me-2"></i>Recent Reports</span>
+                    <a href="{% url 'reports_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if reports %}
+                    <div class="list-group list-group-flush">
+                        {% for report in reports %}
+                        <a href="{% url 'report_detail' report.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ report.get_analysis_type_display }}</strong>
+                                <br><small class="text-muted">{{ report.submission.title }} &middot; {{ report.created_at|date:"M d, H:i" }}</small>
+                            </div>
+                            <span class="badge bg-primary-soft report-badge">{{ report.analysis_type }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-bar-chart" style="font-size:2rem;"></i>
+                        <p class="mt-2 mb-0">No reports yet. Run an analysis to generate one!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

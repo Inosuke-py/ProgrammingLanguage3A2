@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+{% block title %}Memory Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold"><i class="bi bi-memory me-2 text-danger"></i>Memory Overhead Analyzer</h3>
+            <p class="text-muted mb-0">{{ submission.title }}</p>
+        </div>
+        <a href="{% url 'analysis_select' submission.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    {% if results.success %}
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#ef4444;">
+                <div class="stat-value" style="font-size:1.2rem;">{{ results.heap_usage.peak_kb }} KB</div>
+                <div class="stat-label">Peak Memory</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#4f46e5;">
+                <div class="stat-value" style="font-size:1.2rem;">{{ results.heap_usage.current_kb }} KB</div>
+                <div class="stat-label">Current Usage</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#10b981;">
+                <div class="stat-value" style="font-size:1.2rem;">{{ results.stack_estimation.estimated_stack_kb }} KB</div>
+                <div class="stat-label">Est. Stack</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#8b5cf6;">
+                <span class="badge bg-{{ results.summary.memory_efficiency.color }} badge-tier">{{ results.summary.memory_efficiency.label }}</span>
+                <div class="stat-label mt-2">Efficiency Rating</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Memory Timeline -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <canvas id="memoryTimeline" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Object Allocation Chart -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <canvas id="objectChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Heap Usage -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-hdd me-2"></i>Heap Usage</div>
+                <div class="card-body">
+                    <table class="table table-sm table-analysis">
+                        <tr><td>Current</td><td class="fw-bold">{{ results.heap_usage.current_kb }} KB</td></tr>
+                        <tr><td>Peak</td><td class="fw-bold text-danger">{{ results.heap_usage.peak_kb }} KB</td></tr>
+                        <tr><td>Current (MB)</td><td class="fw-bold">{{ results.heap_usage.current_mb }} MB</td></tr>
+                        <tr><td>Peak (MB)</td><td class="fw-bold">{{ results.heap_usage.peak_mb }} MB</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stack Estimation -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-stack me-2"></i>Stack Estimation</div>
+                <div class="card-body">
+                    <table class="table table-sm table-analysis">
+                        <tr><td>Functions</td><td class="fw-bold">{{ results.stack_estimation.function_count }}</td></tr>
+                        <tr><td>Call Sites</td><td class="fw-bold">{{ results.stack_estimation.call_sites }}</td></tr>
+                        <tr><td>Est. Frames</td><td class="fw-bold">{{ results.stack_estimation.estimated_stack_frames }}</td></tr>
+                        <tr><td>Est. Stack</td><td class="fw-bold">{{ results.stack_estimation.estimated_stack_kb }} KB</td></tr>
+                        <tr><td>Recursion Limit</td><td class="fw-bold">{{ results.stack_estimation.recursion_limit }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- GC Stats -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-recycle me-2"></i>Garbage Collection</div>
+                <div class="card-body">
+                    <p><strong>GC Enabled:</strong>
+                        {% if results.gc_stats.gc_enabled %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-danger">No</span>{% endif %}
+                    </p>
+                    <p><strong>Garbage Objects:</strong> {{ results.gc_stats.garbage_objects }}</p>
+                    <table class="table table-sm table-analysis">
+                        <thead><tr><th>Gen</th><th>Collections</th><th>Collected</th><th>Uncollectable</th></tr></thead>
+                        <tbody>
+                            {% for gen in results.gc_stats.generations %}
+                            <tr>
+                                <td>{{ gen.generation }}</td>
+                                <td>{{ gen.collections }}</td>
+                                <td>{{ gen.collected }}</td>
+                                <td>{{ gen.uncollectable }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Allocations -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Top Memory Allocations</div>
+                <div class="card-body p-0" style="max-height:300px;overflow-y:auto;">
+                    <table class="table table-sm table-analysis mb-0">
+                        <thead><tr><th>Location</th><th>Size (KB)</th><th>Count</th><th>Diff</th></tr></thead>
+                        <tbody>
+                            {% for alloc in results.top_allocations %}
+                            <tr>
+                                <td><code class="small">{{ alloc.file|truncatechars:60 }}</code></td>
+                                <td>{{ alloc.size_kb }}</td>
+                                <td>{{ alloc.count }}</td>
+                                <td>{% if alloc.size_diff > 0 %}<span class="text-danger">+{{ alloc.size_diff }}</span>{% else %}{{ alloc.size_diff }}{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ results.error }}</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+
+{% if results.success %}
+
+/* =====================================
+   Memory Timeline Chart
+===================================== */
+
+const timeline =
+    {{ results.memory_timeline|to_json|safe }};
+
+createLineChart(
+    'memoryTimeline',
+
+    timeline.map(
+        t => 'Step ' + t.step
+    ),
+
+    [
+        {
+            label: 'Memory Usage (KB)',
+
+            data: timeline.map(
+                t => t.memory_kb
+            ),
+
+            borderColor: '#ef4444',
+
+            backgroundColor:
+                'rgba(239,68,68,0.15)',
+
+            fill: true,
+
+            tension: 0.4,
+        }
+    ],
+
+    'Memory Usage Timeline'
+);
+
+
+/* =====================================
+   Object Allocation Chart
+===================================== */
+
+const objects =
+    {{ results.object_allocation|to_json|safe }};
+
+const topObjects =
+    Object.entries(objects)
+        .slice(0, 10);
+
+createBarChart(
+
+    'objectChart',
+
+    topObjects.map(o => o[0]),
+
+    topObjects.map(o => o[1].count),
+
+    'Object Allocation by Type',
+
+    topObjects.map(
+        (_, i) =>
+        `hsl(${(i * 36) % 360}, 70%, 55%)`
+    )
+
+);
+
+{% endif %}
+
+</script>
+
+{% endblock %}

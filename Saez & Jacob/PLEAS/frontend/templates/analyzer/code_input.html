@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}Submit Code{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <div class="mb-4">
+        <h3 class="fw-bold"><i class="bi bi-code-slash me-2 text-primary"></i>Submit Code for Analysis</h3>
+        <p class="text-muted">Upload a file or paste your source code directly.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-medium">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">Language</label>
+                        {{ form.language }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Upload Code File <span class="text-muted">(optional)</span></label>
+                    {{ form.file_upload }}
+                    <small class="text-muted">Supported: .py, .js, .java, .cpp, .c, .go, .rs (max 5MB)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Source Code</label>
+                    {{ form.source_code }}
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">Tip: Use Tab for indentation. File upload will auto-fill this field.</small>
+                        <small class="text-muted" id="char-count">0 chars</small>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-play-fill me-1"></i>Submit & Analyze
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sample Code Templates -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="bi bi-lightbulb me-2"></i>Sample Code Templates
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="loadSample('sorting')">
+                        <i class="bi bi-sort-numeric-down me-1"></i>Sorting Algorithm
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="loadSample('fibonacci')">
+                        <i class="bi bi-infinity me-1"></i>Fibonacci (Recursive)
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="loadSample('oop')">
+                        <i class="bi bi-diagram-2 me-1"></i>OOP Example
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const editor = document.getElementById('code-editor');
+const charCount = document.getElementById('char-count');
+
+if (editor) {
+    editor.addEventListener('input', function() {
+        charCount.textContent = this.value.length + ' chars';
+    });
+}
+
+const samples = {
+    sorting: `def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    return arr
+
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+# Test
+data = [64, 34, 25, 12, 22, 11, 90, 1, 45, 78]
+result = bubble_sort(data.copy())
+result2 = quick_sort(data.copy())
+total = sum(result) + len(result2)
+x = 2 + 3 * 4
+y = 10 / 2 + 5`,
+
+    fibonacci: `def fibonacci_recursive(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
+
+def fibonacci_iterative(n):
+    if n <= 0:
+        return 0
+    a, b = 0, 1
+    for i in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+def fibonacci_memoized(n, memo={}):
+    if n in memo:
+        return memo[n]
+    if n <= 1:
+        return n
+    memo[n] = fibonacci_memoized(n - 1, memo) + fibonacci_memoized(n - 2, memo)
+    return memo[n]
+
+# Calculate
+results = []
+for i in range(20):
+    results.append(fibonacci_iterative(i))
+total = sum(results)
+constant = 100 + 200 + 300`,
+
+    oop: `class Animal:
+    def __init__(self, name, species):
+        self.name = name
+        self.species = species
+        self.energy = 100
+
+    def eat(self, food):
+        self.energy += 10
+        return f"{self.name} eats {food}"
+
+    def sleep(self):
+        self.energy += 20
+        return f"{self.name} is sleeping"
+
+    def move(self):
+        self.energy -= 5
+        return f"{self.name} is moving"
+
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name, 'Canine')
+        self.breed = breed
+        self.tricks = []
+
+    def learn_trick(self, trick):
+        self.tricks.append(trick)
+        return f"{self.name} learned {trick}!"
+
+    def perform_trick(self):
+        if self.tricks:
+            return f"{self.name} performs {self.tricks[-1]}"
+        return f"{self.name} doesn't know any tricks"
+
+# Usage
+dog = Dog("Rex", "German Shepherd")
+dog.eat("kibble")
+dog.learn_trick("sit")
+dog.learn_trick("roll over")
+dog.move()
+dog.sleep()
+result = dog.perform_trick()
+count = len(dog.tricks)
+calc = 5 * 10 + 2`
+};
+
+function loadSample(name) {
+    if (editor && samples[name]) {
+        editor.value = samples[name];
+        charCount.textContent = editor.value.length + ' chars';
+    }
+}
+</script>
+{% endblock %}

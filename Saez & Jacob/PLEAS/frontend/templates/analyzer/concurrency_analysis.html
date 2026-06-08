@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+
+{% block title %}Concurrency Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+    .concurrency-chart {
+        min-height: 320px;
+    }
+
+    .model-card {
+        border-left: 4px solid #4f46e5;
+    }
+
+    .event-list {
+        max-height: 220px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold">
+                <i class="bi bi-diagram-3 me-2 text-primary"></i>
+                Concurrency & Parallelism Analysis
+            </h3>
+            <p class="text-muted mb-0">{{ submission.title }}</p>
+        </div>
+        <a href="{% url 'analysis_select' submission.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    {% if results.success %}
+
+    {% if results.runtime_error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Some execution models captured partial measurements after:
+        {{ results.runtime_error }}
+    </div>
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#64748b;">
+                <div class="stat-value" style="font-size:1.15rem;">
+                    {{ results.comparison.sequential_ms }} ms
+                </div>
+                <div class="stat-label">Sequential Baseline</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#4f46e5;">
+                <div class="stat-value" style="font-size:1.15rem;">
+                    {{ results.comparison.threading_ms }} ms
+                </div>
+                <div class="stat-label">Threading</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#10b981;">
+                <div class="stat-value" style="font-size:1.15rem;">
+                    {{ results.comparison.async_ms }} ms
+                </div>
+                <div class="stat-label">Async Execution</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color:#f59e0b;">
+                <div class="stat-value" style="font-size:1.15rem;">
+                    {{ results.comparison.best_approach }}
+                </div>
+                <div class="stat-label">Best Approach</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Threading, Multithreading, Multiprocessing, and Async Comparison
+                </div>
+                <div class="card-body concurrency-chart">
+                    <canvas id="concurrencyCompare"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    CPU Utilization Monitoring
+                </div>
+                <div class="card-body concurrency-chart">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        {% for model in results.execution_models %}
+        <div class="col-xl col-md-6">
+            <div class="card shadow-sm model-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="fw-bold mb-1">{{ model.name }}</h6>
+                            <div class="small text-muted">{{ model.description }}</div>
+                        </div>
+                        <span class="badge bg-primary">{{ model.worker_count }}</span>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <tr><td>Total</td><td class="fw-bold">{{ model.total_time_ms }} ms</td></tr>
+                        <tr><td>Speedup</td><td class="fw-bold">{{ model.speedup_vs_sequential }}x</td></tr>
+                        <tr><td>Overhead</td><td class="fw-bold">{{ model.overhead_ms }} ms</td></tr>
+                        <tr><td>CPU</td><td class="fw-bold">{{ model.cpu_utilization_percent }}%</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Thread Performance Details
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr><td>Manual Threads</td><td class="fw-bold">{{ results.threading_results.total_time_ms }} ms</td></tr>
+                        <tr><td>Thread Count</td><td class="fw-bold">{{ results.threading_results.thread_count }}</td></tr>
+                        <tr><td>Avg Thread Time</td><td class="fw-bold">{{ results.threading_results.avg_thread_time_ms }} ms</td></tr>
+                        <tr><td>Speedup</td><td class="fw-bold">{{ results.threading_results.speedup_vs_sequential }}x</td></tr>
+                        <tr><td>Thread Overhead</td><td class="fw-bold">{{ results.threading_results.overhead_ms }} ms</td></tr>
+                    </table>
+                    <hr>
+                    <table class="table table-sm mb-0">
+                        <tr><td>Thread Pool</td><td class="fw-bold">{{ results.thread_pool_results.total_time_ms }} ms</td></tr>
+                        <tr><td>Avg Worker Time</td><td class="fw-bold">{{ results.thread_pool_results.avg_thread_time_ms }} ms</td></tr>
+                        <tr><td>Pool Speedup</td><td class="fw-bold">{{ results.thread_pool_results.speedup_vs_sequential }}x</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Multiprocessing and Async Execution
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr><td>Processes</td><td class="fw-bold">{{ results.multiprocessing_results.process_count }}</td></tr>
+                        <tr><td>Total Time</td><td class="fw-bold">{{ results.multiprocessing_results.total_time_ms }} ms</td></tr>
+                        <tr><td>Estimated Time</td><td class="fw-bold">{{ results.multiprocessing_results.estimated_time_ms }} ms</td></tr>
+                        <tr><td>Speedup</td><td class="fw-bold">{{ results.multiprocessing_results.speedup_vs_sequential }}x</td></tr>
+                        <tr><td>Status</td><td class="fw-bold">{{ results.multiprocessing_results.note }}</td></tr>
+                    </table>
+                    <hr>
+                    <table class="table table-sm mb-0">
+                        <tr><td>Async Tasks</td><td class="fw-bold">{{ results.async_results.task_count }}</td></tr>
+                        <tr><td>Async Time</td><td class="fw-bold">{{ results.async_results.total_time_ms }} ms</td></tr>
+                        <tr><td>Avg Task Time</td><td class="fw-bold">{{ results.async_results.avg_task_time_ms }} ms</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Synchronization Overhead
+                </div>
+                <div class="card-body">
+                    <div class="concurrency-chart" style="min-height:220px;">
+                        <canvas id="syncChart"></canvas>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <tr><td>Unsafe Time</td><td class="fw-bold">{{ results.synchronization_overhead.unsafe_time_ms }} ms</td></tr>
+                        <tr><td>Locked Time</td><td class="fw-bold">{{ results.synchronization_overhead.locked_time_ms }} ms</td></tr>
+                        <tr><td>Lock Overhead</td><td class="fw-bold">{{ results.synchronization_overhead.overhead_ms }} ms</td></tr>
+                        <tr><td>Overhead Percent</td><td class="fw-bold">{{ results.synchronization_overhead.overhead_percent }}%</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Race Condition Simulation
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="small text-muted">Expected</div>
+                            <div class="h4 fw-bold">{{ results.race_condition_analysis.expected_value }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-danger">Unsafe</div>
+                            <div class="h4 fw-bold text-danger">{{ results.race_condition_analysis.unsafe_value }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-success">Locked</div>
+                            <div class="h4 fw-bold text-success">{{ results.race_condition_analysis.safe_value }}</div>
+                        </div>
+                    </div>
+
+                    {% if results.race_condition_analysis.race_detected %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-bug me-1"></i>
+                        Race condition present in the unsafe simulation.
+                        Data loss:
+                        <strong>{{ results.race_condition_analysis.data_loss_percent }}%</strong>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success py-2">
+                        <i class="bi bi-check-circle me-1"></i>
+                        No data corruption appeared in this run.
+                    </div>
+                    {% endif %}
+
+                    <p class="text-muted small mb-0">
+                        {{ results.race_condition_analysis.note }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    Deadlock Analysis
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-{% if results.deadlock_analysis.risk_level == 'high' %}danger{% elif results.deadlock_analysis.risk_level == 'medium' %}warning{% else %}success{% endif %}">
+                            Risk: {{ results.deadlock_analysis.risk_level|title }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            Shared Resources: {{ results.deadlock_analysis.shared_resources_detected }}
+                        </span>
+                    </div>
+
+                    {% for d in results.deadlock_analysis.potential_deadlocks %}
+                    <div class="alert alert-warning py-2 mb-2">
+                        Line {{ d.line }}:
+                        {{ d.pattern }}
+                        <span class="badge bg-dark ms-1">{{ d.risk }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-success py-2">
+                        <i class="bi bi-check-circle me-1"></i>
+                        No obvious uploaded-code deadlock patterns detected.
+                    </div>
+                    {% endfor %}
+
+                    <div class="border rounded p-3">
+                        <div class="fw-semibold mb-2">Deadlock Demonstration</div>
+                        <div class="small text-muted mb-2">
+                            {{ results.deadlock_analysis.simulation.note }}
+                        </div>
+                        <div class="event-list">
+                            {% for event in results.deadlock_analysis.simulation.events %}
+                            <div class="small">
+                                <i class="bi bi-dot"></i>{{ event }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-5">
+        <div class="card-header">
+            Uploaded Code Concurrency Signals
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <div class="small text-muted">Threading</div>
+                    <div class="fw-bold">{{ results.static_analysis.uses_threading|yesno:"Detected,Not detected" }}</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="small text-muted">Multiprocessing</div>
+                    <div class="fw-bold">{{ results.static_analysis.uses_multiprocessing|yesno:"Detected,Not detected" }}</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="small text-muted">Async</div>
+                    <div class="fw-bold">{{ results.static_analysis.uses_async|yesno:"Detected,Not detected" }}</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="small text-muted">Locks</div>
+                    <div class="fw-bold">{{ results.static_analysis.uses_locks|yesno:"Detected,Not detected" }}</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="small text-muted">Shared Resources</div>
+                    <div class="fw-bold">{{ results.static_analysis.shared_resources }}</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="small text-muted">CPU Cores</div>
+                    <div class="fw-bold">{{ results.cpu_utilization.cpu_count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ results.error }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if results.success %}
+const viz = {{ results.visualizations|to_json|safe }};
+
+createBarChart(
+    'concurrencyCompare',
+    viz.model_labels,
+    viz.model_times,
+    'Concurrency Model Comparison (ms)',
+    ['#64748b', '#4f46e5', '#8b5cf6', '#10b981', '#f59e0b']
+);
+
+createBarChart(
+    'cpuChart',
+    viz.model_labels,
+    viz.cpu,
+    'CPU Utilization Estimate (%)',
+    ['#64748b', '#4f46e5', '#8b5cf6', '#10b981', '#f59e0b']
+);
+
+createBarChart(
+    'syncChart',
+    viz.sync_labels,
+    viz.sync_times,
+    'Synchronization Cost (ms)',
+    ['#ef4444', '#10b981']
+);
+{% endif %}
+</script>
+{% endblock %}

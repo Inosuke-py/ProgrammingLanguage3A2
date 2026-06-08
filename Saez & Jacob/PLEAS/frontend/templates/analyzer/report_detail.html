@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+{% block title %}Report Detail{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Report Detail</h3>
+            <p class="text-muted mb-0">{{ report.get_analysis_type_display }} - {{ report.submission.title }}</p>
+        </div>
+        <div>
+            <a href="{% url 'analysis_select' report.submission.pk %}" class="btn btn-outline-primary btn-sm me-1">
+                <i class="bi bi-arrow-repeat me-1"></i>Re-run
+            </a>
+            <a href="{% url 'reports_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between">
+            <span><i class="bi bi-info-circle me-2"></i>Report Metadata</span>
+            <span class="badge bg-primary">{{ report.analysis_type }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4"><strong>Type:</strong> {{ report.get_analysis_type_display }}</div>
+                <div class="col-md-4"><strong>Created:</strong> {{ report.created_at|date:"M d, Y H:i" }}</div>
+                <div class="col-md-4"><strong>Submission:</strong> {{ report.submission.title }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><i class="bi bi-braces me-2"></i>Results Data (JSON)</div>
+        <div class="card-body p-0">
+            <pre class="bytecode-display mb-0" style="max-height:600px;">{{ report.results|to_json }}</pre>
+        </div>
+    </div>
+
+    <!-- Quick re-analysis links -->
+    <div class="card mt-4">
+        <div class="card-header"><i class="bi bi-lightning me-2"></i>Quick Actions</div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'bytecode_analysis' report.submission.pk %}" class="btn btn-outline-primary btn-sm">Bytecode</a>
+                <a href="{% url 'caching_analysis' report.submission.pk %}" class="btn btn-outline-success btn-sm">Caching</a>
+                <a href="{% url 'optimization_analysis' report.submission.pk %}" class="btn btn-outline-secondary btn-sm">Optimization</a>
+                <a href="{% url 'hotpath_analysis' report.submission.pk %}" class="btn btn-outline-warning btn-sm">Hot Path</a>
+                <a href="{% url 'runtime_analysis' report.submission.pk %}" class="btn btn-outline-info btn-sm">Runtime</a>
+                <a href="{% url 'concurrency_analysis' report.submission.pk %}" class="btn btn-outline-dark btn-sm">Concurrency</a>
+                <a href="{% url 'memory_analysis' report.submission.pk %}" class="btn btn-outline-danger btn-sm">Memory</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

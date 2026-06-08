@@ -1,0 +1,8 @@
+{
+  "project_name": "PLEAS",
+  "framework": "Django",
+  "database": "SQLite",
+  "frontend": "Bootstrap 5",
+  "charts": "Chart.js",
+  "language": "Python"
+}

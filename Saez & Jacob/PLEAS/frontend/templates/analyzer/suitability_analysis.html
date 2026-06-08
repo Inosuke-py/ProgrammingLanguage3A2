@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load analyzer_tags %}
+{% block title %}Suitability Recommendations{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="mb-4">
+        <h3 class="fw-bold"><i class="bi bi-stars me-2 text-warning"></i>Application Suitability Recommendation Engine</h3>
+        <p class="text-muted">Find the best programming language for your project requirements.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Configuration Form -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top:80px;">
+                <div class="card-header"><i class="bi bi-sliders me-2"></i>Configuration</div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Application Domain</label>
+                            {{ form.domain }}
+                        </div>
+
+                        <h6 class="fw-bold mt-4 mb-3">Priority Weights</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Runtime Efficiency</label>
+                            {{ form.runtime_efficiency }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Memory Efficiency</label>
+                            {{ form.memory_overhead }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Concurrency Support</label>
+                            {{ form.concurrency_support }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Scalability</label>
+                            {{ form.scalability }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Ecosystem Maturity</label>
+                            {{ form.ecosystem_maturity }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Development Speed</label>
+                            {{ form.development_speed }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <i class="bi bi-search me-1"></i>Get Recommendations
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-8">
+            {% if results %}
+            <!-- Explanations -->
+            {% for exp in results.explanations %}
+            <div class="alert alert-{{ exp.type }} mb-3">
+                <h6 class="alert-heading fw-bold">{{ exp.title }}</h6>
+                <p class="mb-0">{{ exp.text }}</p>
+            </div>
+            {% endfor %}
+
+            <!-- Rankings -->
+            <div class="card mb-4">
+                <div class="card-header"><i class="bi bi-trophy me-2"></i>Rankings for {{ results.domain_label }}</div>
+                <div class="card-body">
+                    {% for lang in results.rankings %}
+                    <div class="d-flex align-items-center p-3 mb-2 rounded {% if forloop.first %}bg-success bg-opacity-10{% else %}bg-light{% endif %}">
+                        <div class="rank-badge {% if lang.rank == 1 %}rank-1{% elif lang.rank == 2 %}rank-2{% elif lang.rank == 3 %}rank-3{% else %}rank-other{% endif %} me-3">
+                            {{ lang.rank }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold">{{ lang.name }}</h6>
+                                <span class="badge bg-{{ lang.badge }}">{{ lang.tier }}</span>
+                            </div>
+                            <div class="progress mt-2" style="height:8px;">
+                                <div class="progress-bar bg-{{ lang.badge }}" style="width:{{ lang.score }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">{{ lang.description|truncatechars:80 }}</small>
+                                <small class="fw-bold">{{ lang.score }}/100</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Radar Chart -->
+            <div class="chart-container mb-4">
+                <canvas id="radarChart" height="400"></canvas>
+            </div>
+
+            <!-- Score Comparison -->
+            <div class="chart-container">
+                <canvas id="scoreChart" height="300"></canvas>
+            </div>
+
+            {% else %}
+            <!-- Default: Domain Overview -->
+            <div class="card">
+                <div class="card-header"><i class="bi bi-globe me-2"></i>Domain Overview - Best Languages</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for domain_name, info in domain_rankings.items %}
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-2">{{ domain_name }}</h6>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ info.best }}</span>
+                                    <span class="text-muted small">Score: {{ info.score }}/100</span>
+                                </div>
+                                <div class="mt-2">
+                                    {% for name, score in info.top_3 %}
+                                    <small class="d-block text-muted">{{ forloop.counter }}. {{ name }} ({{ score }})</small>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if results %}
+// Radar Chart - Top 4 languages
+const radarData = {{ results.radar_data|to_json }};
+const topLangs = {{ results.rankings|to_json }}.slice(0, 4);
+const criteria = ['runtime_efficiency', 'memory_overhead', 'concurrency_support', 'scalability', 'ecosystem_maturity', 'development_speed'];
+const criteriaLabels = ['Runtime', 'Memory', 'Concurrency', 'Scalability', 'Ecosystem', 'Dev Speed'];
+const colors = [
+    {bg: 'rgba(79,70,229,0.2)', border: '#4f46e5'},
+    {bg: 'rgba(16,185,129,0.2)', border: '#10b981'},
+    {bg: 'rgba(245,158,11,0.2)', border: '#f59e0b'},
+    {bg: 'rgba(239,68,68,0.2)', border: '#ef4444'},
+];
+
+const datasets = topLangs.map((lang, i) => ({
+    label: lang.name,
+    data: criteria.map(c => lang.criteria_scores[c] || 0),
+    backgroundColor: colors[i].bg,
+    borderColor: colors[i].border,
+    borderWidth: 2,
+    pointBackgroundColor: colors[i].border,
+}));
+
+createRadarChart('radarChart', criteriaLabels, datasets, 'Language Comparison Radar');
+
+// Score bar chart
+const rankings = {{ results.rankings|to_json }};
+createBarChart('scoreChart',
+    rankings.map(r => r.name),
+    rankings.map(r => r.score),
+    'Overall Suitability Scores',
+    rankings.map((r, i) => `hsl(${(i * 40) % 360}, 70%, 55%)`)
+);
+{% endif %}
+</script>
+{% endblock %}
