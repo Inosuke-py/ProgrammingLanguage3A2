@@ -1,0 +1,2901 @@
+/* ===== MODULE VIEWER — BOOK STYLE ===== */
+.viewer-page {
+  display: flex; flex-direction: column;
+  height: 100vh;
+  background: hsl(220 15% 8%);
+}
+
+/* Loading / Error */
+.viewer-loading, .viewer-error {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100vh; gap: var(--space-3);
+  color: var(--color-text-tertiary);
+  background: hsl(220 15% 8%);
+}
+
+/* ===== TOOLBAR ===== */
+.viewer-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-1);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0; z-index: 10;
+  min-height: 48px;
+}
+.viewer-toolbar__left {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-width: 0; flex: 1;
+}
+.viewer-toolbar__title {
+  min-width: 0;
+}
+.viewer-toolbar__title h2 {
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.viewer-toolbar__title span {
+  font-size: 11px; color: var(--color-text-tertiary);
+}
+.viewer-toolbar__center {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.viewer-toolbar__page {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.viewer-toolbar__right {
+  display: flex; align-items: center; gap: var(--space-2);
+  flex: 1; justify-content: flex-end;
+}
+.viewer-toolbar__zoom {
+  font-size: 11px; font-weight: 600;
+  color: var(--color-text-tertiary);
+  min-width: 36px; text-align: center;
+}
+
+.icon-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  background: transparent; border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--color-surface-2); color: var(--color-text-primary); }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ===== BOOK BODY ===== */
+.viewer-body {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== SIDE ARROWS ===== */
+.book-arrow {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  z-index: 5;
+}
+.book-arrow:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+  border-color: var(--color-accent);
+  transform: scale(1.05);
+}
+.book-arrow--disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* ===== THE BOOK ===== */
+.book {
+  flex-shrink: 1;
+  max-width: 100%;
+  transition: transform 0.25s ease;
+}
+.book--flip-right {
+  animation: flipRight 0.3s ease;
+}
+.book--flip-left {
+  animation: flipLeft 0.3s ease;
+}
+
+@keyframes flipRight {
+  0% { transform: perspective(1200px) rotateY(0); }
+  50% { transform: perspective(1200px) rotateY(-8deg); }
+  100% { transform: perspective(1200px) rotateY(0); }
+}
+@keyframes flipLeft {
+  0% { transform: perspective(1200px) rotateY(0); }
+  50% { transform: perspective(1200px) rotateY(8deg); }
+  100% { transform: perspective(1200px) rotateY(0); }
+}
+
+/* ===== BOOK SPREAD (two pages side by side) ===== */
+.book-spread {
+  display: flex;
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.3),
+    0 12px 40px rgba(0,0,0,0.2);
+  border-radius: 4px 8px 8px 4px;
+  overflow: hidden;
+}
+
+/* Individual page */
+.book-page {
+  background: hsl(40 20% 95%);
+  position: relative;
+  overflow: hidden;
+}
+.book-page--left {
+  border-radius: 4px 0 0 4px;
+  box-shadow: inset -4px 0 8px rgba(0,0,0,0.05);
+}
+.book-page--right {
+  border-radius: 0 4px 4px 0;
+  box-shadow: inset 4px 0 8px rgba(0,0,0,0.05);
+}
+.book-page--single {
+  border-radius: 4px;
+}
+
+/* Page number at bottom */
+.book-page__number {
+  position: absolute; bottom: 8px;
+  font-size: 10px; font-weight: 600;
+  color: hsl(35 20% 60%);
+  pointer-events: none;
+}
+.book-page--left .book-page__number { left: 12px; }
+.book-page--right .book-page__number { right: 12px; }
+.book-page--single .book-page__number { left: 50%; transform: translateX(-50%); }
+
+/* Empty page */
+.book-page__empty {
+  width: 100%; height: 100%;
+  min-height: 400px;
+  display: flex; align-items: center; justify-content: center;
+  color: hsl(35 20% 60%);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+/* Center spine */
+.book-spine {
+  width: 6px; flex-shrink: 0;
+  background: linear-gradient(90deg,
+    hsl(35 15% 82%) 0%,
+    hsl(35 10% 75%) 30%,
+    hsl(35 15% 70%) 50%,
+    hsl(35 10% 75%) 70%,
+    hsl(35 15% 82%) 100%
+  );
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+}
+
+/* Page loading */
+.viewer-page-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--space-2);
+  min-height: 400px; min-width: 300px;
+  color: hsl(35 20% 55%);
+  font-size: var(--text-sm);
+}
+
+/* ===== PAGE DOTS ===== */
+.book-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: var(--space-3);
+  flex-shrink: 0;
+}
+.book-dot {
+  width: 8px; height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+.book-dot:hover { background: var(--color-text-tertiary); }
+.book-dot--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  width: 20px; border-radius: 4px;
+}
+
+/* Hide too many dots */
+.book-pagination:has(.book-dot:nth-child(n+30)) {
+  flex-wrap: wrap; max-width: 400px;
+}
+
+/* ===== react-pdf overrides ===== */
+.react-pdf__Page__canvas {
+  display: block !important;
+}
+.react-pdf__Page {
+  display: flex !important;
+  justify-content: center;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* On mobile we drop the zoom controls and the "Share" ghost button.
+     Reader/PDF toggle, theme picker, and "Generate Quiz" stay visible
+     so the toolbar is still useful, just denser.
+
+     The buttons we DROP (in order in JSX):
+       - .icon-btn ZoomOut         (1st icon-btn)
+       - .viewer-toolbar__zoom     (the % label)
+       - .icon-btn ZoomIn          (2nd icon-btn)
+       - .btn--ghost Share         (.btn but not .btn--primary)
+
+     The buttons we KEEP:
+       - .icon-btn Reader/PDF toggle (only when hasReader)
+       - .icon-btn Palette / theme picker
+       - .btn.btn--primary Generate Quiz
+  */
+  .viewer-toolbar__right .btn:not(.btn--primary) { display: none; }
+  .viewer-toolbar__right > .icon-btn:nth-child(1),
+  .viewer-toolbar__right > .icon-btn:nth-child(3),
+  .viewer-toolbar__right > .viewer-toolbar__zoom {
+    display: none;
+  }
+
+  .book-arrow { width: 36px; height: 36px; }
+  .viewer-body { padding: var(--space-2); gap: var(--space-1); }
+
+  .book-spread { border-radius: 4px; }
+
+  /* Reader mode on mobile — the side arrows can't sit BESIDE the
+     reader (they squeeze it into a sliver on a 360px phone). Instead
+     we float them on top of the reader as semi-transparent overlay
+     buttons anchored to the left/right edges, so the reader uses the
+     full screen width and the arrows are still tappable in their
+     usual visual position. */
+  .viewer-body:has(.reader-view-container) {
+    position: relative;
+    padding: 0;
+  }
+  .viewer-body:has(.reader-view-container) .book-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 40px;
+    height: 40px;
+    opacity: 0.85;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .viewer-body:has(.reader-view-container) .book-arrow--left  { left: 6px; }
+  .viewer-body:has(.reader-view-container) .book-arrow--right { right: 6px; }
+  .viewer-body:has(.reader-view-container) .book-arrow:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.05);
+    opacity: 1;
+  }
+  /* Hide arrows entirely when there's only one page (no nav needed). */
+  .viewer-body:has(.reader-view-container) .book-arrow--disabled {
+    opacity: 0.25;
+  }
+
+  .reader-view-container {
+    margin: 8px;
+    /* Pad sides so text doesn't run under the floating arrows. */
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewer-toolbar { padding: var(--space-1) var(--space-2); }
+  .viewer-toolbar__title h2 { font-size: 12px; }
+  .viewer-toolbar__center { display: none; }
+  .hide-mobile { display: none; }
+}
+
+/* ===== SELECTION POPUP ===== */
+.selection-popup {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  z-index: 100;
+  display: flex;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  padding: var(--space-1);
+  gap: 2px;
+  animation: popupIn 0.15s ease;
+}
+@keyframes popupIn {
+  from { opacity: 0; transform: translate(-50%, -90%); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+.selection-popup__btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 10px;
+  border: none; background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; border-radius: var(--radius-md);
+  transition: all 0.12s; white-space: nowrap;
+}
+.selection-popup__btn:hover {
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+}
+
+/* ===== DEFINITION PANEL ===== */
+.definition-panel {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  width: 320px; max-height: 400px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  z-index: 100;
+  overflow: hidden;
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.definition-panel__header {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.definition-panel__header h3 {
+  font-size: var(--text-lg); font-weight: 700;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+.definition-panel__phonetic {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+.definition-panel__close {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer; border-radius: var(--radius-sm);
+  transition: all 0.12s;
+}
+.definition-panel__close:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+.definition-panel__loading {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+.definition-panel__body {
+  padding: var(--space-3) var(--space-4);
+  overflow-y: auto; max-height: 300px;
+}
+.definition-panel__meaning {
+  margin-bottom: var(--space-3);
+}
+.definition-panel__meaning:last-child { margin-bottom: 0; }
+.definition-panel__pos {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.definition-panel__meaning p {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+.definition-panel__example {
+  font-size: var(--text-xs) !important;
+  color: var(--color-text-tertiary) !important;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ===== TOAST ===== */
+.viewer-toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+  font-size: var(--text-sm); font-weight: 600;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 200;
+  animation: toastIn 0.2s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ===== HIGHLIGHTS BADGE ===== */
+.viewer-toolbar__highlights {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 600;
+  color: hsl(45 90% 55%);
+  padding: 2px 8px;
+  background: hsl(45 90% 55% / 0.1);
+  border-radius: var(--radius-full);
+}
+
+/* ===== TEXT LAYER INTERACTIVITY ===== */
+.react-pdf__Page__textContent {
+  cursor: text;
+}
+.react-pdf__Page__textContent span::selection {
+  background: hsl(45 90% 55% / 0.35);
+}
+
+/* ===== VISUAL HIGHLIGHTS ===== */
+mark.highlighted-text {
+  background: hsl(45 90% 55% / 0.35);
+  border-bottom: 2px solid hsl(45 90% 55%);
+  border-radius: 2px;
+  color: inherit;
+  padding: 0 1px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+mark.highlighted-text:hover {
+  background: hsl(45 90% 55% / 0.55);
+}
+
+/* Annotation layer links styled to match theme */
+.annotationLayer .linkAnnotation > a {
+  cursor: pointer;
+}
+
+/* Highlight button accent */
+.selection-popup__btn--highlight {
+  color: hsl(45 90% 55%);
+}
+.selection-popup__btn--highlight:hover {
+  background: hsl(45 90% 55%);
+  color: hsl(0 0% 10%);
+}
+
+/* ===== IMAGE HOVER ANIMATION ===== */
+.react-pdf__Page__canvas {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.book-page:hover .react-pdf__Page__canvas {
+  transform: scale(1.002);
+}
+
+/* Annotation layer links glow */
+.react-pdf__Page__annotations a {
+  transition: all 0.2s !important;
+}
+.react-pdf__Page__annotations a:hover {
+  box-shadow: 0 0 8px hsl(45 90% 55% / 0.4) !important;
+  outline: 2px solid hsl(45 90% 55% / 0.5) !important;
+  border-radius: 2px;
+}
+
+/* ===== YOUTUBE MODAL ===== */
+.youtube-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.youtube-modal {
+  width: 90vw; max-width: 900px;
+  position: relative;
+  animation: scaleIn 0.25s ease;
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.youtube-modal__close {
+  position: absolute; top: -40px; right: 0;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s;
+}
+.youtube-modal__close:hover {
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+}
+.youtube-modal__player {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.youtube-modal__player iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.youtube-modal__fallback {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-3);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+}
+
+/* ===== HIDE UTILITY ===== */
+.hide-sm { }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .definition-panel {
+    bottom: 0; right: 0; left: 0;
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 50vh;
+  }
+  .selection-popup__btn span { display: none; }
+  .hide-sm { display: none !important; }
+  
+  .viewer-body { padding: var(--space-2); gap: var(--space-1); }
+  .book-arrow { width: 36px; height: 36px; }
+  
+  .youtube-modal { width: 95vw; }
+  .youtube-modal__close { top: -36px; }
+}
+
+@media (max-width: 480px) {
+  .viewer-toolbar { 
+    padding: var(--space-1) var(--space-2);
+    flex-wrap: wrap; gap: 4px;
+  }
+  .viewer-toolbar__title h2 { font-size: 12px; max-width: 120px; }
+  .viewer-toolbar__center { display: none; }
+  .viewer-toolbar__zoom { display: none; }
+  
+  .book-arrow { width: 28px; height: 28px; }
+  .book-arrow svg { width: 18px; height: 18px; }
+  
+  .book-pagination { gap: 4px; padding: var(--space-2); padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px)); }
+  .book-dot { width: 6px; height: 6px; }
+  .book-dot--active { width: 16px; }
+}
+
+/* ===================================================================
+   ===== READING THEMES =============================================
+   -------------------------------------------------------------------
+   Pass A — picker UI + per-theme swatch previews + the Novel theme.
+   Sci-Fi / Kids / Pixel chrome blocks are intentionally deferred to
+   Pass B; their swatches are included here so the picker still shows
+   colored previews.
+
+   IMPORTANT INVARIANTS
+     • Never tint, filter, or color-shift the rendered PDF page.
+       Selectors targeting .react-pdf__Page__canvas, .react-pdf__
+       Page__textContent, or .react-pdf__Page__annotations are OFF
+       LIMITS in this block.
+     • Every theme rule lives under [data-module-theme="<id>"] so the
+       default look (no attribute / "none") falls through to the
+       existing styles unchanged.
+     • Switching to "Default" must restore the original look INSTANTLY
+       — no lingering animations.
+   =================================================================== */
+
+/* ---------- Theme picker panel ----------------------------------- */
+.theme-picker {
+  position: absolute;
+  top: 64px;
+  right: 16px;
+  width: min(400px, calc(100vw - 32px));
+  z-index: 50;
+
+  padding: 16px;
+  border-radius: 16px;
+
+  background: var(--surface-skeuo, var(--color-surface-1));
+  box-shadow: var(--shadow-skeuo, 0 12px 40px rgba(0, 0, 0, 0.4));
+
+  animation: theme-picker-in 180ms var(--ease-out, ease-out);
+  transform-origin: top right;
+}
+
+@keyframes theme-picker-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.theme-picker__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.theme-picker__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.theme-picker__hint {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+.theme-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .theme-picker {
+    top: 56px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+  }
+  .theme-picker__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Theme card ------------------------------------------- */
+.theme-card {
+  /* button reset */
+  appearance: none;
+  border: none;
+  font: inherit;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+
+  background: var(--surface-skeuo, var(--color-surface-2));
+  box-shadow: var(--shadow-skeuo, 0 2px 6px rgba(0, 0, 0, 0.4));
+
+  transition:
+    transform 140ms var(--ease-out, ease-out),
+    box-shadow 140ms var(--ease-out, ease-out),
+    outline-color 140ms var(--ease-out, ease-out);
+}
+
+.theme-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-skeuo-hover,
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 hsl(40 50% 95% / 0.08)
+  );
+}
+
+.theme-card:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-skeuo-pressed,
+    inset 4px 4px 10px rgba(0, 0, 0, 0.6),
+    inset -4px -4px 10px hsl(220 18% 8% / 0.5)
+  );
+}
+
+.theme-card--active {
+  box-shadow: var(--shadow-skeuo-pressed,
+    inset 4px 4px 10px rgba(0, 0, 0, 0.6),
+    inset -4px -4px 10px hsl(220 18% 8% / 0.5)
+  );
+  outline: 1px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.theme-card__swatch {
+  display: block;
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: var(--surface-skeuo, var(--color-surface-2));
+}
+
+.theme-card__name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.theme-card__check {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.theme-card__desc {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--color-text-tertiary);
+}
+
+/* ---------- Toolbar Palette button: active state ----------------- */
+.icon-btn--active {
+  color: var(--color-accent);
+  box-shadow:
+    inset 0 0 0 1px hsl(42 78% 52% / 0.35),
+    inset 0 1px 4px hsl(42 78% 52% / 0.12);
+}
+.icon-btn--active:hover {
+  color: var(--color-accent-hover, var(--color-accent));
+}
+
+/* ===================================================================
+   SWATCH PREVIEWS — one per theme. These render in the picker only
+   and are independent of whether that theme has full chrome rules
+   yet. They give the user a visual hint of what the theme will feel
+   like before clicking.
+   =================================================================== */
+
+/* Default — obsidian skeuo with a faint vertical sheen. */
+.theme-card--none .theme-card__swatch {
+  background:
+    linear-gradient(180deg,
+      hsl(220 14% 11%) 0%,
+      hsl(220 15% 6%)  100%);
+  box-shadow:
+    inset 0 1px 0 hsl(40 50% 95% / 0.06),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.5);
+}
+
+/* Novel — cream paper inside a walnut frame. */
+.theme-card--novel .theme-card__swatch {
+  background: linear-gradient(135deg, #f5e9c8, #e8d5a8);
+  box-shadow:
+    inset 0 0 0 2px #6b4a2a,
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Sci-Fi — pure black with cyan scan lines + inset glow. */
+.theme-card--scifi .theme-card__swatch {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(0, 234, 255, 0.08) 3px 4px
+    ),
+    #000;
+  box-shadow:
+    inset 0 0 12px rgba(0, 234, 255, 0.45),
+    inset 0 0 0 1px rgba(0, 234, 255, 0.25);
+}
+
+/* Kids — pastel rainbow, chunky soft look. */
+.theme-card--kids .theme-card__swatch {
+  background: linear-gradient(
+    100deg,
+    #ffc1d8 0%,
+    #ffe2b3 28%,
+    #c8f5d4 55%,
+    #cfd8ff 80%,
+    #e6c9ff 100%
+  );
+  border-radius: 12px;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.08),
+    inset 0 2px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* Pixel — sharp 4×4 checker, no anti-aliasing, no rounded corners. */
+.theme-card--pixel .theme-card__swatch {
+  border-radius: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background:
+    repeating-conic-gradient(
+      #2d8c3a 0% 25%,
+      #1a5a25 0% 50%
+    ) 0 0 / 16px 16px;
+  box-shadow:
+    inset 0 0 0 2px #0e2f15,
+    inset 0 0 0 4px #65d977;
+}
+
+/* ===================================================================
+   THEME: NOVEL
+   -------------------------------------------------------------------
+   Warm cream paper, walnut wood toolbar, gold-leaf accents, italic
+   serif chrome. PDF page background stays untouched — we only frame
+   it.
+   =================================================================== */
+
+[data-module-theme="novel"].viewer-page {
+  background-color: #f5e9c8;
+  background-image:
+    radial-gradient(rgba(107, 74, 42, 0.06) 1px, transparent 1px),
+    radial-gradient(rgba(107, 74, 42, 0.04) 1px, transparent 1px);
+  background-size: 6px 6px, 11px 11px;
+  background-position: 0 0, 3px 4px;
+  box-shadow:
+    inset 0 0 120px rgba(107, 74, 42, 0.18),
+    inset 0 0 40px rgba(74, 47, 23, 0.08);
+}
+
+/* ----- Toolbar ---------------------------------------------------- */
+[data-module-theme="novel"] .viewer-toolbar {
+  background: linear-gradient(180deg, #6b4a2a 0%, #4a2f17 100%);
+  border-bottom: 1px solid #c9a227;
+  color: #f5e9c8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-module-theme="novel"] .viewer-toolbar__title h2 {
+  color: #f5e9c8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.55);
+  padding-bottom: 1px;
+  display: inline-block;
+}
+
+[data-module-theme="novel"] .viewer-toolbar__title span {
+  color: rgba(245, 233, 200, 0.65);
+  font-style: italic;
+}
+
+[data-module-theme="novel"] .viewer-toolbar__page,
+[data-module-theme="novel"] .viewer-toolbar__zoom {
+  color: #f5e9c8;
+}
+
+[data-module-theme="novel"] .viewer-toolbar__highlights {
+  color: #f5e9c8;
+  background: rgba(201, 162, 39, 0.22);
+}
+
+/* Walnut neumorphic look on toolbar buttons. */
+[data-module-theme="novel"] .viewer-toolbar .icon-btn,
+[data-module-theme="novel"] .viewer-toolbar .btn--ghost {
+  color: #f5e9c8;
+  background: linear-gradient(180deg, #7a5733 0%, #4f3319 100%);
+  border-radius: 8px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 230, 180, 0.22),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: transform 140ms var(--ease-out, ease-out), box-shadow 140ms var(--ease-out, ease-out);
+}
+
+[data-module-theme="novel"] .viewer-toolbar .icon-btn:hover,
+[data-module-theme="novel"] .viewer-toolbar .btn--ghost:hover {
+  background: linear-gradient(180deg, #8a653e 0%, #5a3a1d 100%);
+  color: #fff8e0;
+}
+
+[data-module-theme="novel"] .viewer-toolbar .icon-btn:active,
+[data-module-theme="novel"] .viewer-toolbar .btn--ghost:active {
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.55),
+    inset -1px -1px 0 rgba(255, 230, 180, 0.10);
+}
+
+[data-module-theme="novel"] .viewer-toolbar .icon-btn--active {
+  color: #ffd766;
+  box-shadow:
+    inset 0 0 0 1px rgba(201, 162, 39, 0.65),
+    inset 0 1px 4px rgba(201, 162, 39, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Primary "Generate Quiz" CTA — keep it gold-on-walnut. */
+[data-module-theme="novel"] .viewer-toolbar .btn--primary {
+  background: linear-gradient(180deg, #d4af37 0%, #8b6914 100%);
+  color: #2a1a08;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 180, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+[data-module-theme="novel"] .viewer-toolbar .btn--primary:hover {
+  background: linear-gradient(180deg, #e2bf45 0%, #a07a1d 100%);
+}
+
+/* ----- Book frame ------------------------------------------------- */
+[data-module-theme="novel"] .book {
+  /* perspective for the page-curl animation below */
+  perspective: 1500px;
+}
+
+[data-module-theme="novel"] .book-spread {
+  padding: 12px;
+  background: linear-gradient(135deg, #6b4a2a 0%, #4a2f17 100%);
+  border-radius: 6px 10px 10px 6px;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 2px #c9a227;
+}
+
+/* PDF page itself stays white — we explicitly do NOT tint the canvas.
+   Only override the wrapper background to keep paper neutral. */
+[data-module-theme="novel"] .book-page {
+  background: #ffffff;
+}
+
+[data-module-theme="novel"] .book-page--left {
+  border-radius: 2px 0 0 2px;
+}
+[data-module-theme="novel"] .book-page--right {
+  border-radius: 0 2px 2px 0;
+}
+[data-module-theme="novel"] .book-page--single {
+  border-radius: 2px;
+}
+
+/* Empty-page text styled to match. */
+[data-module-theme="novel"] .book-page__empty {
+  color: #6b4a2a;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+}
+
+/* Solid-gold spine. */
+[data-module-theme="novel"] .book-spine {
+  background: linear-gradient(
+    180deg,
+    #d4af37 0%,
+    #8b6914 50%,
+    #d4af37 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(74, 47, 23, 0.5),
+    0 0 6px rgba(201, 162, 39, 0.35);
+}
+
+/* Roman-style page number with a tiny ornamental flourish. */
+[data-module-theme="novel"] .book-page__number {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: #6b4a2a;
+  bottom: 10px;
+}
+[data-module-theme="novel"] .book-page__number::before {
+  content: '•';
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  color: #c9a227;
+  line-height: 1;
+  margin-bottom: 2px;
+  letter-spacing: 0.4em;
+}
+
+/* ----- Page arrows: brass/walnut buttons -------------------------- */
+[data-module-theme="novel"] .book-arrow {
+  background: radial-gradient(circle at 30% 30%, #c9a227 0%, #6b4a2a 75%);
+  border: 1px solid #4a2f17;
+  color: #f5e9c8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 160ms var(--ease-out, ease-out),
+    box-shadow 160ms var(--ease-out, ease-out),
+    background 160ms var(--ease-out, ease-out);
+}
+
+[data-module-theme="novel"] .book-arrow:hover:not(:disabled) {
+  background: radial-gradient(circle at 30% 30%, #e2bf45 0%, #7a5733 75%);
+  color: #fff8e0;
+  border-color: #c9a227;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 200, 0.55),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+}
+
+[data-module-theme="novel"] .book-arrow--disabled {
+  opacity: 0.35;
+}
+
+/* ----- Page-turn animation: paper curl ---------------------------- */
+[data-module-theme="novel"] .book--flip-right {
+  animation: novel-page-turn-right 250ms var(--ease-in-out, ease) both;
+}
+[data-module-theme="novel"] .book--flip-left {
+  animation: novel-page-turn-left 250ms var(--ease-in-out, ease) both;
+}
+
+@keyframes novel-page-turn-right {
+  0%   { transform: perspective(1500px) rotateY(0deg); }
+  50%  { transform: perspective(1500px) rotateY(-14deg); }
+  100% { transform: perspective(1500px) rotateY(0deg); }
+}
+@keyframes novel-page-turn-left {
+  0%   { transform: perspective(1500px) rotateY(0deg); }
+  50%  { transform: perspective(1500px) rotateY(14deg); }
+  100% { transform: perspective(1500px) rotateY(0deg); }
+}
+
+/* Page dots tuned for parchment background. */
+[data-module-theme="novel"] .book-dot {
+  background: rgba(107, 74, 42, 0.25);
+  border-color: rgba(107, 74, 42, 0.45);
+}
+[data-module-theme="novel"] .book-dot:hover {
+  background: rgba(107, 74, 42, 0.55);
+}
+[data-module-theme="novel"] .book-dot--active {
+  background: #c9a227;
+  border-color: #8b6914;
+}
+
+
+/* ===================================================================
+   THEME: SCI-FI
+   -------------------------------------------------------------------
+   Neon HUD on a void. Dark techno reader with cyan accents, CRT
+   scan-lines, slow flicker, monospace chrome, and a brief "data
+   glitch" page-turn. PDF page content is OFF LIMITS — never tint or
+   filter .react-pdf__Page__canvas / __textContent / __annotations.
+   Only the surrounding chrome is painted.
+   =================================================================== */
+
+[data-module-theme="scifi"].viewer-page {
+  position: relative;
+  background-color: #000;
+  background-image:
+    radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.6) 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(0, 234, 255, 0.05) 3px 4px
+    );
+  color: #00eaff;
+}
+
+/* CRT flicker overlay — sits above the canvas but below the toolbar.
+   Pointer-events disabled so the user can still select PDF text. */
+[data-module-theme="scifi"].viewer-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: transparent;
+  animation: scifi-crt-flicker 3s ease-in-out infinite;
+}
+
+@keyframes scifi-crt-flicker {
+  0%, 100% { opacity: 1; }
+  47%      { opacity: 1; }
+  50%      { opacity: 0.97; }
+  53%      { opacity: 1; }
+}
+
+/* ----- Toolbar ---------------------------------------------------- */
+[data-module-theme="scifi"] .viewer-toolbar {
+  background: #0a0e14;
+  border-bottom: 1px solid rgba(0, 234, 255, 0.25);
+  box-shadow:
+    0 0 12px rgba(0, 234, 255, 0.5),
+    inset 0 1px 0 rgba(0, 234, 255, 0.4);
+  color: #00eaff;
+}
+
+[data-module-theme="scifi"] .viewer-toolbar__title h2 {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #00eaff;
+  text-shadow: 0 0 6px rgba(0, 234, 255, 0.6);
+  font-weight: 600;
+}
+
+[data-module-theme="scifi"] .viewer-toolbar__title span {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  color: rgba(0, 234, 255, 0.55);
+  letter-spacing: 0.08em;
+}
+
+[data-module-theme="scifi"] .viewer-toolbar__page,
+[data-module-theme="scifi"] .viewer-toolbar__zoom {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  color: #00eaff;
+  letter-spacing: 0.08em;
+}
+
+[data-module-theme="scifi"] .viewer-toolbar__highlights {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  color: #00eaff;
+  background: rgba(0, 234, 255, 0.08);
+  border: 1px solid rgba(0, 234, 255, 0.4);
+  text-shadow: 0 0 4px rgba(0, 234, 255, 0.5);
+}
+
+/* Translucent cyan-edged buttons. */
+[data-module-theme="scifi"] .viewer-toolbar .icon-btn,
+[data-module-theme="scifi"] .viewer-toolbar .btn--ghost {
+  background: rgba(0, 234, 255, 0.06);
+  color: #00eaff;
+  border: 1px solid rgba(0, 234, 255, 0.35);
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: box-shadow 0.18s ease, color 0.15s ease, border-color 0.15s ease, background 0.12s ease;
+}
+
+[data-module-theme="scifi"] .viewer-toolbar .icon-btn:hover:not(:disabled),
+[data-module-theme="scifi"] .viewer-toolbar .btn--ghost:hover:not(:disabled) {
+  color: #aef6ff;
+  border-color: #00eaff;
+  background: rgba(0, 234, 255, 0.12);
+  box-shadow:
+    0 0 12px rgba(0, 234, 255, 0.5),
+    inset 0 0 10px rgba(0, 234, 255, 0.25);
+}
+
+[data-module-theme="scifi"] .viewer-toolbar .icon-btn:active,
+[data-module-theme="scifi"] .viewer-toolbar .btn--ghost:active {
+  background: rgba(0, 234, 255, 0.2);
+  color: #000;
+  box-shadow: inset 0 0 14px rgba(0, 234, 255, 0.6);
+}
+
+/* Stronger cyan glow ring on active. */
+[data-module-theme="scifi"] .viewer-toolbar .icon-btn--active {
+  color: #aef6ff;
+  border-color: #00eaff;
+  background: rgba(0, 234, 255, 0.18);
+  box-shadow:
+    0 0 14px rgba(0, 234, 255, 0.8),
+    0 0 0 1px rgba(0, 234, 255, 0.6),
+    inset 0 0 10px rgba(0, 234, 255, 0.35);
+}
+[data-module-theme="scifi"] .viewer-toolbar .icon-btn--active:hover {
+  box-shadow:
+    0 0 18px rgba(0, 234, 255, 0.9),
+    0 0 0 1px rgba(0, 234, 255, 0.7),
+    inset 0 0 14px rgba(0, 234, 255, 0.5);
+}
+
+/* Primary "Generate Quiz" CTA — solid cyan with halo. */
+[data-module-theme="scifi"] .viewer-toolbar .btn--primary {
+  background: #00eaff;
+  color: #000;
+  border: 1px solid #00eaff;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(0, 234, 255, 0.6);
+}
+[data-module-theme="scifi"] .viewer-toolbar .btn--primary:hover {
+  background: #4df3ff;
+  color: #000;
+  box-shadow: 0 0 22px rgba(0, 234, 255, 0.85);
+}
+[data-module-theme="scifi"] .viewer-toolbar .btn--primary svg {
+  stroke: #000;
+}
+
+/* ----- Book spread: HUD frame with corner brackets ---------------- */
+[data-module-theme="scifi"] .book-spread {
+  position: relative;
+  padding: 8px;
+  background: rgba(10, 14, 20, 0.85);
+  border: 1px solid rgba(0, 234, 255, 0.2);
+  border-radius: 0;
+  box-shadow:
+    0 0 30px rgba(0, 234, 255, 0.15),
+    inset 0 0 10px rgba(0, 234, 255, 0.08);
+  overflow: visible;
+}
+
+/* Top-left L-bracket. */
+[data-module-theme="scifi"] .book-spread::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px;
+  width: 20px; height: 20px;
+  border-top: 2px solid #00eaff;
+  border-left: 2px solid #00eaff;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(0, 234, 255, 0.7));
+}
+
+/* Bottom-right L-bracket. */
+[data-module-theme="scifi"] .book-spread::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; right: -2px;
+  width: 20px; height: 20px;
+  border-bottom: 2px solid #00eaff;
+  border-right: 2px solid #00eaff;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(0, 234, 255, 0.7));
+}
+
+/* Pages stay white — never paint the rendered PDF. Sharp edges. */
+[data-module-theme="scifi"] .book-page {
+  background: #ffffff;
+  border-radius: 0;
+}
+[data-module-theme="scifi"] .book-page--left,
+[data-module-theme="scifi"] .book-page--right,
+[data-module-theme="scifi"] .book-page--single {
+  border-radius: 0;
+}
+
+/* Spine: thin glowing cyan strip. */
+[data-module-theme="scifi"] .book-spine {
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    #00eaff 30%,
+    #00eaff 70%,
+    transparent
+  );
+  box-shadow: 0 0 8px #00eaff;
+}
+
+/* Page number: monospace cyan, bracketed. */
+[data-module-theme="scifi"] .book-page__number {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  color: #00eaff;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 234, 255, 0.4);
+  padding: 2px 6px;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 4px rgba(0, 234, 255, 0.6);
+}
+[data-module-theme="scifi"] .book-page__number::before { content: '[ '; }
+[data-module-theme="scifi"] .book-page__number::after  { content: ' ]'; }
+
+[data-module-theme="scifi"] .book-page__empty {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  color: #00eaff;
+  letter-spacing: 0.05em;
+}
+
+/* ----- Side arrows: hex-rounded HUD buttons ----------------------- */
+[data-module-theme="scifi"] .book-arrow {
+  background: rgba(0, 234, 255, 0.06);
+  border: 1px solid rgba(0, 234, 255, 0.45);
+  color: #00eaff;
+  border-radius: 6px;
+  box-shadow:
+    0 0 6px rgba(0, 234, 255, 0.3),
+    inset 0 0 6px rgba(0, 234, 255, 0.15);
+  transition: box-shadow 0.2s ease, color 0.15s ease, border-color 0.15s ease, transform 0.18s ease, background 0.15s ease;
+}
+[data-module-theme="scifi"] .book-arrow:hover:not(:disabled) {
+  background: rgba(0, 234, 255, 0.15);
+  color: #aef6ff;
+  border-color: #00eaff;
+  box-shadow:
+    0 0 18px rgba(0, 234, 255, 0.7),
+    inset 0 0 14px rgba(0, 234, 255, 0.35);
+  transform: translateZ(0) scale(1.06);
+}
+[data-module-theme="scifi"] .book-arrow--disabled,
+[data-module-theme="scifi"] .book-arrow:disabled {
+  opacity: 0.2;
+  box-shadow: none;
+}
+
+/* ----- Page-turn: data-glitch (skew + opacity flicker, 220ms) ----- */
+[data-module-theme="scifi"] .book--flip-right {
+  animation: scifi-glitch-right 220ms ease both;
+}
+[data-module-theme="scifi"] .book--flip-left {
+  animation: scifi-glitch-left 220ms ease both;
+}
+
+@keyframes scifi-glitch-right {
+  0%   { transform: skewX(0deg);  opacity: 1; }
+  30%  { transform: skewX(-3deg); opacity: 0.6; }
+  70%  { transform: skewX(2deg);  opacity: 0.85; }
+  100% { transform: skewX(0deg);  opacity: 1; }
+}
+@keyframes scifi-glitch-left {
+  0%   { transform: skewX(0deg);  opacity: 1; }
+  30%  { transform: skewX(3deg);  opacity: 0.6; }
+  70%  { transform: skewX(-2deg); opacity: 0.85; }
+  100% { transform: skewX(0deg);  opacity: 1; }
+}
+
+/* ----- Page dots: cyan diamonds (rotated squares) ----------------- */
+[data-module-theme="scifi"] .book-dot {
+  width: 8px;
+  height: 8px;
+  background: rgba(0, 234, 255, 0.25);
+  border: 1px solid rgba(0, 234, 255, 0.55);
+  border-radius: 0;
+  transform: rotate(45deg);
+}
+[data-module-theme="scifi"] .book-dot:hover {
+  background: rgba(0, 234, 255, 0.45);
+  box-shadow: 0 0 6px rgba(0, 234, 255, 0.5);
+}
+[data-module-theme="scifi"] .book-dot--active {
+  background: #00eaff;
+  border-color: #00eaff;
+  box-shadow:
+    0 0 10px rgba(0, 234, 255, 0.9),
+    0 0 18px rgba(0, 234, 255, 0.5);
+}
+
+
+/* ===================================================================
+   THEME: KIDS
+   -------------------------------------------------------------------
+   Storybook for children — soft pastels, rounded everything, playful
+   comic-style typography, gentle bouncy page-turn with overshoot
+   easing, and a sticker decoration on the book frame. PDF page
+   content is OFF LIMITS — never tint .react-pdf__Page__canvas /
+   __textContent / __annotations. Only the chrome is painted.
+   =================================================================== */
+
+[data-module-theme="kids"].viewer-page {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.6) 0 6px, transparent 7px),
+    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.45) 0 5px, transparent 6px),
+    radial-gradient(circle at 22% 72%, rgba(255, 255, 255, 0.5) 0 7px, transparent 8px),
+    radial-gradient(circle at 88% 68%, rgba(255, 255, 255, 0.4) 0 4px, transparent 5px),
+    radial-gradient(circle at 50% 90%, rgba(255, 255, 255, 0.35) 0 6px, transparent 7px),
+    linear-gradient(180deg, #cfe9ff 0%, #fff7e0 60%, #ffe0ec 100%);
+}
+
+/* ----- Toolbar: soft pastel mint with rounded chunky bottom ------- */
+[data-module-theme="kids"] .viewer-toolbar {
+  background: #bff0d4;
+  border-bottom: none;
+  border-radius: 0 0 24px 24px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    0 6px 20px rgba(255, 182, 193, 0.25);
+}
+
+[data-module-theme="kids"] .viewer-toolbar__title h2 {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+  font-weight: 700;
+  color: #3a4a6b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-module-theme="kids"] .viewer-toolbar__title span {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  color: rgba(58, 74, 107, 0.65);
+}
+
+[data-module-theme="kids"] .viewer-toolbar__page,
+[data-module-theme="kids"] .viewer-toolbar__zoom {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  color: #3a4a6b;
+  font-weight: 700;
+}
+
+[data-module-theme="kids"] .viewer-toolbar__highlights {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 700;
+  color: #3a4a6b;
+  background: #fff;
+  border: 2px solid #ffc1d8;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* Toolbar buttons: round chunky pastel-pink pills, springy bounce. */
+[data-module-theme="kids"] .viewer-toolbar .icon-btn {
+  width: 36px;
+  height: 36px;
+  background: #ffc1d8;
+  color: #3a4a6b;
+  border: none;
+  border-radius: 50%;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 700;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease, box-shadow 0.18s ease;
+}
+[data-module-theme="kids"] .viewer-toolbar .btn--ghost {
+  background: #ffc1d8;
+  color: #3a4a6b;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 700;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease, box-shadow 0.18s ease;
+}
+
+[data-module-theme="kids"] .viewer-toolbar .icon-btn svg,
+[data-module-theme="kids"] .viewer-toolbar .btn--ghost svg {
+  stroke: #3a4a6b;
+}
+
+[data-module-theme="kids"] .viewer-toolbar .icon-btn:hover:not(:disabled),
+[data-module-theme="kids"] .viewer-toolbar .btn--ghost:hover:not(:disabled) {
+  transform: scale(1.12);
+  background: #ffd0e1;
+  color: #3a4a6b;
+  box-shadow: 0 4px 12px rgba(255, 193, 216, 0.5);
+}
+
+[data-module-theme="kids"] .viewer-toolbar .icon-btn:active,
+[data-module-theme="kids"] .viewer-toolbar .btn--ghost:active {
+  transform: scale(0.96);
+}
+
+/* Palette button while this theme is active — pastel-yellow ring. */
+[data-module-theme="kids"] .viewer-toolbar .icon-btn--active {
+  background: #ffe066;
+  color: #3a4a6b;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px #ffc1d8;
+}
+[data-module-theme="kids"] .viewer-toolbar .icon-btn--active:hover {
+  background: #ffe680;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px #ffc1d8,
+    0 4px 12px rgba(255, 193, 216, 0.5);
+}
+
+/* Primary "Generate Quiz" CTA — sunshine yellow chunky pill. */
+[data-module-theme="kids"] .viewer-toolbar .btn--primary {
+  background: #ffe066;
+  color: #3a4a6b;
+  border: 3px solid #f5b800;
+  border-radius: 999px;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 800;
+  padding: 4px 14px;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease;
+}
+[data-module-theme="kids"] .viewer-toolbar .btn--primary:hover {
+  background: #ffe680;
+  transform: scale(1.05) rotate(-2deg);
+}
+[data-module-theme="kids"] .viewer-toolbar .btn--primary svg {
+  stroke: #3a4a6b;
+}
+
+/* ----- Book spread: chunky white frame with pink inner border ----- */
+[data-module-theme="kids"] .book-spread {
+  position: relative;
+  padding: 16px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow:
+    0 12px 30px rgba(255, 182, 193, 0.3),
+    0 0 0 6px #ffd6e8 inset;
+  overflow: visible;
+}
+
+/* Sticker decoration in the top-right corner. */
+[data-module-theme="kids"] .book-spread::after {
+  content: '⭐';
+  position: absolute;
+  top: -10px; right: -10px;
+  font-size: 28px;
+  transform: rotate(15deg);
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+  z-index: 2;
+}
+
+[data-module-theme="kids"] .book-page {
+  background: #fff;
+  border-radius: 12px;
+}
+[data-module-theme="kids"] .book-page--left,
+[data-module-theme="kids"] .book-page--right,
+[data-module-theme="kids"] .book-page--single {
+  border-radius: 12px;
+}
+
+/* Spine: pastel candy-stripe. */
+[data-module-theme="kids"] .book-spine {
+  width: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    #bff0d4 0 8px,
+    #ffd6e8 8px 16px
+  );
+}
+
+/* Page number: chunky pastel pill in comic font. */
+[data-module-theme="kids"] .book-page__number {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 800;
+  font-size: 16px;
+  background: #ffd6e8;
+  color: #3a4a6b;
+  padding: 4px 10px;
+  border-radius: 999px;
+  bottom: 8px;
+}
+
+[data-module-theme="kids"] .book-page__empty {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  color: #3a4a6b;
+  font-weight: 700;
+}
+[data-module-theme="kids"] .book-page__empty::after { content: ' 🎉'; }
+
+/* ----- Side arrows: huge round pastel-yellow buttons -------------- */
+[data-module-theme="kids"] .book-arrow {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ffe066;
+  color: #3a4a6b;
+  border: 3px solid #3a4a6b;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 6px 0 rgba(58, 74, 107, 0.2);
+}
+[data-module-theme="kids"] .book-arrow svg {
+  stroke: #3a4a6b;
+  stroke-width: 3;
+}
+[data-module-theme="kids"] .book-arrow:hover:not(:disabled) {
+  transform: scale(1.15) translateY(-3px);
+  background: #ffe680;
+  color: #3a4a6b;
+  border-color: #3a4a6b;
+  box-shadow: 0 9px 0 rgba(58, 74, 107, 0.25);
+}
+[data-module-theme="kids"] .book-arrow:active:not(:disabled) {
+  transform: scale(0.96) translateY(2px);
+  box-shadow: 0 3px 0 rgba(58, 74, 107, 0.2);
+}
+[data-module-theme="kids"] .book-arrow--disabled,
+[data-module-theme="kids"] .book-arrow:disabled {
+  opacity: 0.4;
+}
+
+/* ----- Page-turn: gentle bounce with overshoot -------------------- */
+[data-module-theme="kids"] .book--flip-right {
+  animation: kids-bounce-right 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+[data-module-theme="kids"] .book--flip-left {
+  animation: kids-bounce-left 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes kids-bounce-right {
+  0%   { transform: scale(1)    translateX(0); }
+  50%  { transform: scale(0.96) translateX(10px); }
+  100% { transform: scale(1)    translateX(0); }
+}
+@keyframes kids-bounce-left {
+  0%   { transform: scale(1)    translateX(0); }
+  50%  { transform: scale(0.96) translateX(-10px); }
+  100% { transform: scale(1)    translateX(0); }
+}
+
+/* ----- Page dots: chunky pastel circles, scale on active ---------- */
+[data-module-theme="kids"] .book-dot {
+  width: 14px;
+  height: 14px;
+  background: #ffd6e8;
+  border: none;
+  border-radius: 50%;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease;
+}
+[data-module-theme="kids"] .book-dot:hover {
+  background: #ffc1d8;
+  transform: scale(1.1);
+}
+[data-module-theme="kids"] .book-dot--active {
+  width: 14px;
+  background: #ffe066;
+  border-radius: 50%;
+  transform: scale(1.4);
+  box-shadow: 0 2px 6px rgba(245, 184, 0, 0.5);
+}
+
+
+/* ===================================================================
+   THEME: PIXEL ART
+   -------------------------------------------------------------------
+   Classic 8-bit/16-bit inventory screen. Hard pixel edges everywhere
+   (radius:0), retro green/black palette, monospaced bitmap font,
+   raised/sunken nested-border buttons, and a snap (no-tween) page
+   turn. PDF page content is OFF LIMITS — never style
+   .react-pdf__Page__canvas / __textContent / __annotations. Only the
+   chrome gets pixelated.
+   =================================================================== */
+
+[data-module-theme="pixel"].viewer-page {
+  background-color: #0e2f15;
+  background-image: repeating-conic-gradient(
+    #0e2f15 0% 25%,
+    #1a3d20 0% 50%
+  );
+  background-size: 8px 8px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+}
+
+/* ----- Toolbar: bright pixel green with hard black bottom border -- */
+[data-module-theme="pixel"] .viewer-toolbar {
+  background: #65d977;
+  border-bottom: 4px solid #0e2f15;
+  border-radius: 0;
+  box-shadow: none;
+  color: #0e2f15;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar__title h2 {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  color: #0e2f15;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+  transition: none;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar__title span {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  color: #1a4a25;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar__page,
+[data-module-theme="pixel"] .viewer-toolbar__zoom {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  color: #0e2f15;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar__highlights {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  color: #ffd700;
+  background: #0e2f15;
+  border-radius: 0;
+  padding: 4px 8px;
+  font-size: 9px;
+  border: 2px solid #0e2f15;
+  box-shadow:
+    inset 2px 2px 0 #2d8c3a,
+    inset -2px -2px 0 #021a05;
+}
+
+/* Toolbar buttons: classic 8-bit raised look (light top/left,
+   dark bottom/right). Hover/active inverts for a "pressed" effect. */
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn,
+[data-module-theme="pixel"] .viewer-toolbar .btn--ghost {
+  background: #2d8c3a;
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow:
+    inset 2px 2px 0 #88f598,
+    inset -2px -2px 0 #043b0c;
+  transition: none !important;
+}
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn svg,
+[data-module-theme="pixel"] .viewer-toolbar .btn--ghost svg {
+  stroke: #fff;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn:hover:not(:disabled),
+[data-module-theme="pixel"] .viewer-toolbar .btn--ghost:hover:not(:disabled) {
+  background: #246f2f;
+  color: #fff;
+  transform: none;
+  box-shadow:
+    inset -2px -2px 0 #88f598,
+    inset 2px 2px 0 #043b0c;
+}
+
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn:active,
+[data-module-theme="pixel"] .viewer-toolbar .btn--ghost:active {
+  background: #1f5f29;
+  box-shadow:
+    inset -2px -2px 0 #88f598,
+    inset 2px 2px 0 #021a05;
+}
+
+/* Active palette button: sunken state, locked-in look. */
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn--active {
+  background: #ffd700;
+  color: #0e2f15;
+  box-shadow:
+    inset -2px -2px 0 #fff48a,
+    inset 2px 2px 0 #806800;
+}
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn--active svg {
+  stroke: #0e2f15;
+}
+[data-module-theme="pixel"] .viewer-toolbar .icon-btn--active:hover {
+  background: #ffe33a;
+  color: #0e2f15;
+  box-shadow:
+    inset -2px -2px 0 #fff48a,
+    inset 2px 2px 0 #806800;
+}
+
+/* Primary "Generate Quiz" CTA — bright yellow with hard black border. */
+[data-module-theme="pixel"] .viewer-toolbar .btn--primary {
+  background: #ffd700;
+  color: #0e2f15;
+  border: 3px solid #0e2f15;
+  border-radius: 0;
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  box-shadow: none;
+  transition: none !important;
+}
+[data-module-theme="pixel"] .viewer-toolbar .btn--primary:hover {
+  background: #ffe33a;
+  color: #0e2f15;
+  transform: translate(2px, 2px);
+}
+[data-module-theme="pixel"] .viewer-toolbar .btn--primary svg {
+  stroke: #0e2f15;
+}
+
+/* ----- Book spread: chunky pixel frame with hard offset shadow ---- */
+[data-module-theme="pixel"] .book-spread {
+  padding: 8px;
+  background: #1a3d20;
+  border: 4px solid #0e2f15;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+[data-module-theme="pixel"] .book-page {
+  background: #fff;
+  border-radius: 0;
+}
+[data-module-theme="pixel"] .book-page--left,
+[data-module-theme="pixel"] .book-page--right,
+[data-module-theme="pixel"] .book-page--single {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Spine: 8px solid black with a 1px bright green core line. */
+[data-module-theme="pixel"] .book-spine {
+  width: 8px;
+  background: #000;
+  box-shadow: inset 0 0 0 3px #000, inset 3px 0 0 0 #65d977;
+  /* Build the green line via a layered gradient instead so it sits
+     visually centered. */
+  background-image: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(50% - 0.5px),
+    #65d977 calc(50% - 0.5px),
+    #65d977 calc(50% + 0.5px),
+    #000 calc(50% + 0.5px),
+    #000 100%
+  );
+}
+
+/* Page number: retro pixel font with chevron decorations. */
+[data-module-theme="pixel"] .book-page__number {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  color: #65d977;
+  background: #0e2f15;
+  padding: 2px 6px;
+  font-size: 9px;
+  border-radius: 0;
+  letter-spacing: 0.08em;
+  border: 2px solid #043b0c;
+}
+[data-module-theme="pixel"] .book-page__number::before { content: '<< '; }
+[data-module-theme="pixel"] .book-page__number::after  { content: ' >>'; }
+
+[data-module-theme="pixel"] .book-page__empty {
+  font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+  color: #65d977;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+[data-module-theme="pixel"] .book-page__empty::before {
+  content: '◆ ';
+  color: #ffd700;
+}
+
+/* ----- Side arrows: square pixel buttons with raised border ------- */
+[data-module-theme="pixel"] .book-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 0;
+  background: #2d8c3a;
+  color: #fff;
+  border: none;
+  box-shadow:
+    inset 3px 3px 0 #88f598,
+    inset -3px -3px 0 #043b0c;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transition: none !important;
+}
+[data-module-theme="pixel"] .book-arrow svg {
+  stroke: #fff;
+  stroke-width: 3;
+}
+[data-module-theme="pixel"] .book-arrow:hover:not(:disabled) {
+  background: #246f2f;
+  color: #fff;
+  transform: none;
+  box-shadow:
+    inset -3px -3px 0 #88f598,
+    inset 3px 3px 0 #043b0c;
+}
+[data-module-theme="pixel"] .book-arrow:active:not(:disabled) {
+  background: #1f5f29;
+  box-shadow:
+    inset -3px -3px 0 #88f598,
+    inset 3px 3px 0 #021a05;
+}
+[data-module-theme="pixel"] .book-arrow--disabled,
+[data-module-theme="pixel"] .book-arrow:disabled {
+  opacity: 0.35;
+  box-shadow:
+    inset 3px 3px 0 #88f598,
+    inset -3px -3px 0 #043b0c;
+}
+
+/* ----- Page-turn: hard 80ms blink, no movement (snap) ------------- */
+[data-module-theme="pixel"] .book--flip-right {
+  animation: pixel-snap-right 80ms steps(2, end) both;
+}
+[data-module-theme="pixel"] .book--flip-left {
+  animation: pixel-snap-left 80ms steps(2, end) both;
+}
+
+@keyframes pixel-snap-right {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes pixel-snap-left {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ----- Page dots: tiny solid green squares, yellow on active ------ */
+[data-module-theme="pixel"] .book-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  background: #65d977;
+  border: 1px solid #043b0c;
+  transition: none;
+}
+[data-module-theme="pixel"] .book-dot:hover {
+  background: #88f598;
+}
+[data-module-theme="pixel"] .book-dot--active {
+  width: 12px;
+  height: 12px;
+  background: #ffd700;
+  border-color: #806800;
+}
+
+/* ===================================================================
+   ===== SLINGSHOT THEME ============================================
+   -------------------------------------------------------------------
+   Cartoon physics-game vibe: bright sky, wooden plank chrome, chunky
+   rounded sans, springy slingshot interactions. PDF page content is
+   OFF LIMITS — only the chrome is themed. Generic enough to read as
+   "physics game" without referencing any specific brand.
+   =================================================================== */
+
+/* ----- Swatch preview --------------------------------------------- */
+.theme-card--slingshot .theme-card__swatch {
+  background:
+    radial-gradient(circle at 75% 30%, #c8442a 0 3px, transparent 4px),
+    linear-gradient(180deg, #87ceeb 0%, #4ba3d4 70%, #6b9b3a 70%, #5a8a2e 100%);
+  box-shadow:
+    inset 0 0 0 2px #3a2818,
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ----- Page background: sky-to-grass gradient --------------------- */
+[data-module-theme="slingshot"].viewer-page {
+  position: relative;
+  background:
+    linear-gradient(180deg, #87ceeb 0%, #b8e0f0 50%, #c5e8a3 80%, #6b9b3a 100%);
+  font-family: 'Fredoka', 'Comic Sans MS', 'Chalkboard SE', cursive;
+}
+
+/* ----- Toolbar: aged wood plank with horizontal grain ------------- */
+[data-module-theme="slingshot"] .viewer-toolbar {
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(139, 90, 60, 0.3) 0 2px,
+      transparent 2px 60px),
+    linear-gradient(180deg, #b8855c 0%, #8b5a3c 100%);
+  border-bottom: 3px solid #5a3a2a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 224, 0.3),
+    0 2px 0 rgba(26, 26, 26, 0.25);
+  color: #fff8e0;
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar__title h2 {
+  font-family: 'Fredoka', 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-weight: 700;
+  color: #fff8e0;
+  text-shadow: 0 2px 0 rgba(58, 40, 24, 0.5);
+  letter-spacing: 0.02em;
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar__title span {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  color: rgba(255, 248, 224, 0.7);
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar__page,
+[data-module-theme="slingshot"] .viewer-toolbar__zoom {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 600;
+  color: #fff8e0;
+  text-shadow: 0 1px 0 rgba(58, 40, 24, 0.45);
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar__highlights {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  color: #fff8e0;
+  background: rgba(58, 40, 24, 0.45);
+  border: 2px solid #3a2818;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* ----- Toolbar buttons: cartoon wooden buttons -------------------- */
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn,
+[data-module-theme="slingshot"] .viewer-toolbar .btn--ghost {
+  background: linear-gradient(180deg, #b8855c 0%, #8b5a3c 100%);
+  color: #fff8e0;
+  border: 2px solid #3a2818;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 224, 0.35),
+    0 3px 0 #3a2818;
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s ease,
+              box-shadow 0.18s ease;
+}
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn svg,
+[data-module-theme="slingshot"] .viewer-toolbar .btn--ghost svg {
+  stroke: #fff8e0;
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn:hover:not(:disabled),
+[data-module-theme="slingshot"] .viewer-toolbar .btn--ghost:hover:not(:disabled) {
+  background: linear-gradient(180deg, #c89568 0%, #9b6a4c 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 224, 0.4),
+    0 5px 0 #3a2818;
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn:active,
+[data-module-theme="slingshot"] .viewer-toolbar .btn--ghost:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(58, 40, 24, 0.5),
+    0 1px 0 #3a2818;
+}
+
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn--active {
+  background: linear-gradient(180deg, #e74c3c 0%, #b73626 100%);
+  color: #fff8e0;
+  border-color: #1a1a1a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 224, 0.45),
+    0 3px 0 #1a1a1a;
+}
+[data-module-theme="slingshot"] .viewer-toolbar .icon-btn--active svg {
+  stroke: #fff8e0;
+}
+
+/* Primary "Generate Quiz" CTA — tomato-red cartoon button. */
+[data-module-theme="slingshot"] .viewer-toolbar .btn--primary {
+  background: linear-gradient(180deg, #e74c3c 0%, #b73626 100%);
+  color: #fff8e0;
+  border: 3px solid #1a1a1a;
+  border-radius: 12px;
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 rgba(26, 26, 26, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 224, 0.4),
+    0 4px 0 #1a1a1a;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s ease,
+              box-shadow 0.18s ease;
+}
+[data-module-theme="slingshot"] .viewer-toolbar .btn--primary:hover {
+  background: linear-gradient(180deg, #f15a4a 0%, #c84030 100%);
+  transform: scale(1.06) rotate(1deg);
+}
+[data-module-theme="slingshot"] .viewer-toolbar .btn--primary:active {
+  transform: scale(0.96) translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(26, 26, 26, 0.5),
+    0 1px 0 #1a1a1a;
+}
+[data-module-theme="slingshot"] .viewer-toolbar .btn--primary svg {
+  stroke: #fff8e0;
+}
+
+/* ----- Book frame: thick wood-plank around the pages -------------- */
+[data-module-theme="slingshot"] .book {
+  position: relative;
+  z-index: 2;
+}
+
+[data-module-theme="slingshot"] .book-spread {
+  padding: 14px;
+  background: linear-gradient(180deg, #b8855c, #8b5a3c);
+  border: 4px solid #5a3a2a;
+  border-radius: 6px;
+  box-shadow: 6px 6px 0 rgba(26, 26, 26, 0.4);
+}
+
+[data-module-theme="slingshot"] .book-page {
+  background: #ffffff;
+  border-radius: 4px;
+}
+[data-module-theme="slingshot"] .book-page--left,
+[data-module-theme="slingshot"] .book-page--right,
+[data-module-theme="slingshot"] .book-page--single {
+  border-radius: 4px;
+}
+
+/* ----- Spine: thick dark-wood plank with cartoon nails ------------ */
+[data-module-theme="slingshot"] .book-spine {
+  position: relative;
+  width: 10px;
+  background: linear-gradient(180deg, #5a3a2a, #3a2818, #5a3a2a);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 248, 224, 0.15),
+    inset -1px 0 0 rgba(0, 0, 0, 0.3);
+}
+[data-module-theme="slingshot"] .book-spine::before,
+[data-module-theme="slingshot"] .book-spine::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 35% 30%, #5a3a2a 0%, #1a1a1a 80%);
+  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.5);
+}
+[data-module-theme="slingshot"] .book-spine::before { top: 18px; }
+[data-module-theme="slingshot"] .book-spine::after  { bottom: 18px; }
+
+/* ----- Page numbers: chunky wood-plank pill ----------------------- */
+[data-module-theme="slingshot"] .book-page__number {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 800;
+  background: #5a3a2a;
+  color: #fff8e0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 0 rgba(26, 26, 26, 0.45);
+  bottom: 10px;
+}
+
+[data-module-theme="slingshot"] .book-page__empty {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  color: #5a3a2a;
+}
+
+/* ----- Side arrows: round red slingshot buttons ------------------- */
+[data-module-theme="slingshot"] .book-arrow {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #e74c3c 0%, #b73626 100%);
+  color: #fff8e0;
+  border: 3px solid #1a1a1a;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 248, 224, 0.45),
+    0 5px 0 #1a1a1a;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s ease,
+              box-shadow 0.18s ease;
+}
+[data-module-theme="slingshot"] .book-arrow svg {
+  stroke: #fff8e0;
+  stroke-width: 3;
+}
+[data-module-theme="slingshot"] .book-arrow:hover:not(:disabled) {
+  transform: scale(1.15) rotate(-3deg);
+  background: linear-gradient(180deg, #f15a4a 0%, #c84030 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 248, 224, 0.5),
+    0 7px 0 #1a1a1a;
+}
+[data-module-theme="slingshot"] .book-arrow:active:not(:disabled) {
+  transform: scale(0.92) translateY(4px);
+  box-shadow:
+    inset 0 2px 4px rgba(26, 26, 26, 0.5),
+    0 1px 0 #1a1a1a;
+}
+[data-module-theme="slingshot"] .book-arrow--disabled,
+[data-module-theme="slingshot"] .book-arrow:disabled {
+  opacity: 0.4;
+}
+
+/* ----- Page-turn: springy slingshot fling ------------------------- */
+[data-module-theme="slingshot"] .book--flip-right {
+  animation: slingshot-fling-right 320ms cubic-bezier(.25, 1.5, .5, 1) both;
+}
+[data-module-theme="slingshot"] .book--flip-left {
+  animation: slingshot-fling-left 320ms cubic-bezier(.25, 1.5, .5, 1) both;
+}
+
+@keyframes slingshot-fling-right {
+  0%   { transform: translateX(0)     rotate(0); }
+  30%  { transform: translateX(18px)  rotate(2deg); }
+  60%  { transform: translateX(-6px)  rotate(-0.5deg); }
+  100% { transform: translateX(0)     rotate(0); }
+}
+@keyframes slingshot-fling-left {
+  0%   { transform: translateX(0)     rotate(0); }
+  30%  { transform: translateX(-18px) rotate(-2deg); }
+  60%  { transform: translateX(6px)   rotate(0.5deg); }
+  100% { transform: translateX(0)     rotate(0); }
+}
+
+/* ----- Page dots: small cartoon round buttons --------------------- */
+[data-module-theme="slingshot"] .book-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #8b5a3c;
+  border: 2px solid #1a1a1a;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.15s ease,
+              width 0.15s ease,
+              height 0.15s ease;
+}
+[data-module-theme="slingshot"] .book-dot:hover {
+  background: #b8855c;
+  transform: scale(1.15);
+}
+[data-module-theme="slingshot"] .book-dot--active {
+  width: 16px;
+  height: 16px;
+  background: #e74c3c;
+  border-color: #1a1a1a;
+}
+
+
+/* ===================================================================
+   ===== ANIMATED BACKGROUND DECORATIONS ============================
+   -------------------------------------------------------------------
+   Per-theme decorative overlays. All overlays are pointer-events:
+   none and sit BELOW the toolbar (z-index 10) and book. PDF content
+   (.react-pdf__Page__canvas/__textContent/__annotations) is never
+   touched. A prefers-reduced-motion override at the bottom freezes
+   every animation.
+   =================================================================== */
+
+/* ----- NOVEL: floating books, paper sheets, quill feather --------- */
+[data-module-theme="novel"].viewer-page {
+  position: relative;
+}
+[data-module-theme="novel"].viewer-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    /* large open book */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 80'><path d='M10 20 Q50 5 90 20 L90 70 Q50 55 10 70 Z' fill='%236b4a2a' opacity='0.6'/><line x1='50' y1='12' x2='50' y2='65' stroke='%234a2f17' stroke-width='2'/><path d='M15 25 L45 18' stroke='%234a2f17' stroke-width='1' opacity='0.5'/><path d='M15 35 L45 28' stroke='%234a2f17' stroke-width='1' opacity='0.5'/></svg>"),
+    /* small open book */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 80'><path d='M10 20 Q50 5 90 20 L90 70 Q50 55 10 70 Z' fill='%236b4a2a' opacity='0.6'/><line x1='50' y1='12' x2='50' y2='65' stroke='%234a2f17' stroke-width='2'/><path d='M15 25 L45 18' stroke='%234a2f17' stroke-width='1' opacity='0.5'/><path d='M15 35 L45 28' stroke='%234a2f17' stroke-width='1' opacity='0.5'/></svg>"),
+    /* medium open book */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 80'><path d='M10 20 Q50 5 90 20 L90 70 Q50 55 10 70 Z' fill='%236b4a2a' opacity='0.6'/><line x1='50' y1='12' x2='50' y2='65' stroke='%234a2f17' stroke-width='2'/><path d='M15 25 L45 18' stroke='%234a2f17' stroke-width='1' opacity='0.5'/><path d='M15 35 L45 28' stroke='%234a2f17' stroke-width='1' opacity='0.5'/></svg>"),
+    /* paper sheet */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'><rect x='5' y='5' width='50' height='70' fill='%23f5e9c8' stroke='%236b4a2a' stroke-width='1' transform='rotate(-8 30 40)'/><line x1='12' y1='20' x2='48' y2='18' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/><line x1='12' y1='30' x2='48' y2='28' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/><line x1='12' y1='40' x2='40' y2='38' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/></svg>"),
+    /* paper sheet (smaller) */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'><rect x='5' y='5' width='50' height='70' fill='%23f5e9c8' stroke='%236b4a2a' stroke-width='1' transform='rotate(-8 30 40)'/><line x1='12' y1='20' x2='48' y2='18' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/><line x1='12' y1='30' x2='48' y2='28' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/><line x1='12' y1='40' x2='40' y2='38' stroke='%236b4a2a' stroke-width='0.5' transform='rotate(-8 30 40)'/></svg>"),
+    /* quill feather */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'><path d='M30 90 Q35 50 50 20 Q60 10 70 5 Q60 30 55 50 Q50 70 45 85 Q40 95 30 90 Z' fill='%236b4a2a' opacity='0.5'/><line x1='32' y1='88' x2='52' y2='25' stroke='%234a2f17' stroke-width='1'/></svg>");
+  background-size:
+    110px 88px,
+    72px 58px,
+    88px 70px,
+    60px 80px,
+    48px 64px,
+    80px 100px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat, no-repeat;
+  background-position:
+    5% 110%, 92% 100%, 8% 130%,
+    93% 90%, 3% 140%, 95% 80%;
+  opacity: 0.85;
+  animation:
+    novel-paper-drift 40s linear infinite,
+    novel-candle-pulse 6s ease-in-out infinite;
+}
+
+@keyframes novel-paper-drift {
+  0% {
+    background-position:
+      5% 110%, 92% 100%, 8% 130%,
+      93% 90%, 3% 140%, 95% 80%;
+  }
+  100% {
+    background-position:
+      5% -30%, 92% -25%, 8% -45%,
+      93% -10%, 3% -50%, 95% -10%;
+  }
+}
+@keyframes novel-candle-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1; }
+}
+
+/* ----- SCI-FI: planets, spaceships, stars ------------------------- */
+/* :before is already used for CRT flicker; use ::after for imagery. */
+[data-module-theme="scifi"].viewer-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    /* saturn-like ringed planet */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'><ellipse cx='100' cy='60' rx='80' ry='15' fill='none' stroke='%2300eaff' stroke-width='2' opacity='0.4'/><circle cx='100' cy='60' r='35' fill='%23083a55' stroke='%2300eaff' stroke-width='1.5'/><circle cx='90' cy='55' r='8' fill='%2300a0c0' opacity='0.6'/></svg>"),
+    /* small red planet */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='30' fill='%23a02828' stroke='%23ff8866' stroke-width='1'/><circle cx='38' cy='42' r='6' fill='%23ff8866' opacity='0.6'/><circle cx='58' cy='58' r='4' fill='%23ff5544' opacity='0.5'/></svg>"),
+    /* UFO / spaceship */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 60'><ellipse cx='60' cy='40' rx='45' ry='10' fill='%23083a55' stroke='%2300eaff' stroke-width='1.5'/><ellipse cx='60' cy='30' rx='22' ry='12' fill='%2300eaff' opacity='0.4'/><circle cx='25' cy='40' r='3' fill='%2300eaff'/><circle cx='95' cy='40' r='3' fill='%2300eaff'/><circle cx='60' cy='40' r='3' fill='%2300eaff'/></svg>"),
+    /* large 4-point star */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><path d='M20 0 L23 17 L40 20 L23 23 L20 40 L17 23 L0 20 L17 17 Z' fill='%2300eaff' opacity='0.7'/></svg>"),
+    /* secondary 4-point star */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><path d='M20 0 L23 17 L40 20 L23 23 L20 40 L17 23 L0 20 L17 17 Z' fill='%23ffffff' opacity='0.55'/></svg>"),
+    /* tertiary 4-point star */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><path d='M20 0 L23 17 L40 20 L23 23 L20 40 L17 23 L0 20 L17 17 Z' fill='%2300eaff' opacity='0.5'/></svg>");
+  background-size:
+    220px 132px,
+    90px 90px,
+    140px 70px,
+    24px 24px,
+    18px 18px,
+    14px 14px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat, no-repeat;
+  background-position:
+    6% 18%,
+    92% 70%,
+    4% 32%,
+    94% 50%,
+    8% 12%,
+    90% 88%;
+  animation: scifi-space-drift 80s linear infinite;
+}
+
+@keyframes scifi-space-drift {
+  0% {
+    background-position:
+      6% 18%,
+      92% 70%,
+      4% 32%,
+      94% 50%,
+      8% 12%,
+      90% 88%;
+  }
+  100% {
+    background-position:
+      10% 10%,
+      88% 78%,
+      8% 24%,
+      90% 42%,
+      4% 4%,
+      94% 80%;
+  }
+}
+
+/* ----- KIDS: cartoon stickers (balloon, heart, rainbow, star, smiley, cloud) ----- */
+[data-module-theme="kids"].viewer-page {
+  /* Keep the underlying sky gradient; let ::before paint the moving
+     stickers on top. */
+  background:
+    linear-gradient(180deg, #cfe9ff 0%, #fff7e0 60%, #ffe0ec 100%);
+}
+[data-module-theme="kids"].viewer-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    /* puffy cloud */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'><ellipse cx='25' cy='40' rx='18' ry='15' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='50' cy='32' rx='22' ry='18' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='75' cy='40' rx='18' ry='14' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/></svg>"),
+    /* rainbow arc */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'><path d='M10 55 A40 40 0 0 1 90 55' fill='none' stroke='%23ff6b8e' stroke-width='5'/><path d='M16 55 A34 34 0 0 1 84 55' fill='none' stroke='%23ffb04a' stroke-width='5'/><path d='M22 55 A28 28 0 0 1 78 55' fill='none' stroke='%23ffe066' stroke-width='5'/><path d='M28 55 A22 22 0 0 1 72 55' fill='none' stroke='%2365d977' stroke-width='5'/><path d='M34 55 A16 16 0 0 1 66 55' fill='none' stroke='%2367a3ff' stroke-width='5'/></svg>"),
+    /* pink balloon */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 90'><ellipse cx='30' cy='30' rx='22' ry='25' fill='%23ffc1d8' stroke='%23ff7aa8' stroke-width='2'/><polygon points='27,52 30,57 33,52' fill='%23ff7aa8'/><line x1='30' y1='57' x2='30' y2='88' stroke='%233a4a6b' stroke-width='1.5'/><ellipse cx='25' cy='22' rx='5' ry='8' fill='%23ffe0ec' opacity='0.7'/></svg>"),
+    /* red heart */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><path d='M30 50 C10 35 5 20 15 12 C25 5 30 15 30 20 C30 15 35 5 45 12 C55 20 50 35 30 50 Z' fill='%23ff6b8e' stroke='%23c43464' stroke-width='2'/></svg>"),
+    /* yellow 5-point star */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><polygon points='30,5 36,22 54,22 40,33 45,52 30,42 15,52 20,33 6,22 24,22' fill='%23ffe066' stroke='%23f5b800' stroke-width='2'/></svg>"),
+    /* smiley face */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><circle cx='30' cy='30' r='25' fill='%23ffe066' stroke='%233a4a6b' stroke-width='2'/><circle cx='22' cy='25' r='3' fill='%233a4a6b'/><circle cx='38' cy='25' r='3' fill='%233a4a6b'/><path d='M20 36 Q30 46 40 36' fill='none' stroke='%233a4a6b' stroke-width='2.5' stroke-linecap='round'/></svg>"),
+    /* small cloud */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'><ellipse cx='25' cy='40' rx='18' ry='15' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='50' cy='32' rx='22' ry='18' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='75' cy='40' rx='18' ry='14' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/></svg>");
+  background-size:
+    140px 84px,
+    110px 66px,
+    66px 100px,
+    62px 62px,
+    58px 58px,
+    62px 62px,
+    96px 58px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat, no-repeat,
+    no-repeat;
+  background-position:
+    5% 12%,
+    90% 18%,
+    3% 70%,
+    92% 78%,
+    8% 44%,
+    95% 60%,
+    3% 6%;
+  animation:
+    kids-stickers-drift 50s linear infinite,
+    kids-sparkle 3.5s ease-in-out infinite;
+}
+
+@keyframes kids-stickers-drift {
+  0% {
+    background-position:
+      5% 12%,
+      90% 18%,
+      3% 70%,
+      92% 78%,
+      8% 44%,
+      95% 60%,
+      3% 6%;
+  }
+  100% {
+    background-position:
+      5% -20%,
+      90% -10%,
+      3% 30%,
+      92% 38%,
+      8% 4%,
+      95% 20%,
+      3% -34%;
+  }
+}
+@keyframes kids-sparkle {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1; }
+}
+
+/* ----- PIXEL ART: 8-bit sprites (mushroom, coin, heart, ghost, star) ----- */
+[data-module-theme="pixel"].viewer-page {
+  position: relative;
+}
+[data-module-theme="pixel"].viewer-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background-image:
+    /* pixel mushroom */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='4' y='2' width='8' height='1' fill='%23c8442a'/><rect x='3' y='3' width='10' height='1' fill='%23c8442a'/><rect x='2' y='4' width='12' height='2' fill='%23c8442a'/><rect x='5' y='4' width='2' height='2' fill='%23ffffff'/><rect x='9' y='5' width='2' height='1' fill='%23ffffff'/><rect x='2' y='6' width='12' height='1' fill='%23c8442a'/><rect x='5' y='7' width='6' height='3' fill='%23ffffff'/><rect x='5' y='10' width='6' height='1' fill='%23e0d090'/></svg>"),
+    /* pixel coin */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='5' y='2' width='6' height='1' fill='%23806800'/><rect x='4' y='3' width='8' height='1' fill='%23ffd700'/><rect x='3' y='4' width='10' height='8' fill='%23ffd700'/><rect x='4' y='12' width='8' height='1' fill='%23ffd700'/><rect x='5' y='13' width='6' height='1' fill='%23806800'/><rect x='7' y='5' width='2' height='6' fill='%23806800'/></svg>"),
+    /* pixel heart */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='2' y='3' width='4' height='1' fill='%23c8442a'/><rect x='10' y='3' width='4' height='1' fill='%23c8442a'/><rect x='1' y='4' width='6' height='2' fill='%23c8442a'/><rect x='9' y='4' width='6' height='2' fill='%23c8442a'/><rect x='1' y='6' width='14' height='2' fill='%23c8442a'/><rect x='2' y='8' width='12' height='2' fill='%23c8442a'/><rect x='3' y='10' width='10' height='1' fill='%23c8442a'/><rect x='4' y='11' width='8' height='1' fill='%23c8442a'/><rect x='5' y='12' width='6' height='1' fill='%23c8442a'/><rect x='6' y='13' width='4' height='1' fill='%23c8442a'/><rect x='7' y='14' width='2' height='1' fill='%23c8442a'/><rect x='3' y='5' width='2' height='1' fill='%23ff8866'/></svg>"),
+    /* pixel ghost */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='4' y='1' width='8' height='1' fill='%23ffffff'/><rect x='3' y='2' width='10' height='1' fill='%23ffffff'/><rect x='2' y='3' width='12' height='10' fill='%23ffffff'/><rect x='2' y='13' width='2' height='2' fill='%23ffffff'/><rect x='5' y='13' width='2' height='2' fill='%23ffffff'/><rect x='8' y='13' width='2' height='2' fill='%23ffffff'/><rect x='11' y='13' width='2' height='2' fill='%23ffffff'/><rect x='5' y='6' width='2' height='2' fill='%23000000'/><rect x='10' y='6' width='2' height='2' fill='%23000000'/></svg>"),
+    /* pixel star */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='7' y='1' width='2' height='3' fill='%23ffd700'/><rect x='5' y='3' width='6' height='2' fill='%23ffd700'/><rect x='1' y='5' width='14' height='2' fill='%23ffd700'/><rect x='3' y='7' width='10' height='2' fill='%23ffd700'/><rect x='5' y='9' width='2' height='3' fill='%23ffd700'/><rect x='9' y='9' width='2' height='3' fill='%23ffd700'/><rect x='3' y='12' width='2' height='2' fill='%23ffd700'/><rect x='11' y='12' width='2' height='2' fill='%23ffd700'/></svg>");
+  background-size:
+    72px 72px,
+    64px 64px,
+    72px 72px,
+    72px 72px,
+    64px 64px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat;
+  background-position:
+    5% -20%,
+    92% -10%,
+    8% -30%,
+    94% -15%,
+    3% -25%;
+  opacity: 0.85;
+  animation: pixel-sprites-drift 12s steps(20, end) infinite;
+}
+
+@keyframes pixel-sprites-drift {
+  0% {
+    background-position:
+      5% -20%,
+      92% -10%,
+      8% -30%,
+      94% -15%,
+      3% -25%;
+  }
+  100% {
+    background-position:
+      5% 120%,
+      92% 110%,
+      8% 130%,
+      94% 115%,
+      3% 125%;
+  }
+}
+
+/* ----- SLINGSHOT: slingshot, bird, target, crate, stone, cloud ----- */
+[data-module-theme="slingshot"].viewer-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    /* white puffy cloud */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'><ellipse cx='25' cy='40' rx='18' ry='15' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='50' cy='32' rx='22' ry='18' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/><ellipse cx='75' cy='40' rx='18' ry='14' fill='%23ffffff' stroke='%23cfe9ff' stroke-width='1.5'/></svg>"),
+    /* red bird */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><circle cx='30' cy='32' r='22' fill='%23e74c3c' stroke='%231a1a1a' stroke-width='2'/><circle cx='25' cy='28' r='5' fill='%23ffffff'/><circle cx='35' cy='28' r='5' fill='%23ffffff'/><circle cx='25' cy='28' r='2.5' fill='%231a1a1a'/><circle cx='35' cy='28' r='2.5' fill='%231a1a1a'/><polygon points='28,38 32,38 30,42' fill='%23ffb84a' stroke='%231a1a1a' stroke-width='1'/><path d='M30 10 Q33 5 38 8' fill='none' stroke='%231a1a1a' stroke-width='2' stroke-linecap='round'/></svg>"),
+    /* bullseye target */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><circle cx='30' cy='30' r='26' fill='%23ffffff' stroke='%231a1a1a' stroke-width='2'/><circle cx='30' cy='30' r='20' fill='%23e74c3c'/><circle cx='30' cy='30' r='14' fill='%23ffffff'/><circle cx='30' cy='30' r='8' fill='%23e74c3c'/><circle cx='30' cy='30' r='3' fill='%23ffd700'/></svg>"),
+    /* slingshot Y */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'><path d='M30 80 L30 50' stroke='%235a3a2a' stroke-width='6' stroke-linecap='round'/><path d='M30 50 L15 30' stroke='%235a3a2a' stroke-width='6' stroke-linecap='round'/><path d='M30 50 L45 30' stroke='%235a3a2a' stroke-width='6' stroke-linecap='round'/><path d='M15 30 L45 30' stroke='%23c8442a' stroke-width='2' stroke-dasharray='3,2'/></svg>"),
+    /* wood crate */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><rect x='5' y='10' width='50' height='40' fill='%23b8855c' stroke='%235a3a2a' stroke-width='2'/><line x1='5' y1='25' x2='55' y2='25' stroke='%235a3a2a' stroke-width='1.5'/><line x1='5' y1='40' x2='55' y2='40' stroke='%235a3a2a' stroke-width='1.5'/><line x1='30' y1='10' x2='30' y2='50' stroke='%235a3a2a' stroke-width='1.5'/></svg>"),
+    /* gray stone */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'><circle cx='25' cy='25' r='18' fill='%23808080' stroke='%23404040' stroke-width='2'/><ellipse cx='20' cy='20' rx='4' ry='3' fill='%23a0a0a0' opacity='0.6'/></svg>");
+  background-size:
+    140px 84px,
+    62px 62px,
+    74px 74px,
+    72px 96px,
+    72px 72px,
+    44px 44px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat, no-repeat;
+  background-position:
+    4% 8%,
+    94% 22%,
+    92% 14%,
+    5% 82%,
+    93% 78%,
+    3% 70%;
+  animation: slingshot-physics-drift 50s linear infinite;
+}
+
+@keyframes slingshot-physics-drift {
+  0% {
+    background-position:
+      4% 8%,
+      94% 22%,
+      92% 14%,
+      5% 82%,
+      93% 78%,
+      3% 70%;
+  }
+  100% {
+    background-position:
+      4% -12%,
+      94% 2%,
+      92% -6%,
+      5% 62%,
+      93% 58%,
+      3% 50%;
+  }
+}
+
+
+/* ===================================================================
+   ===== REDUCED-MOTION OVERRIDES ===================================
+   Honor prefers-reduced-motion: freeze every decorative animation.
+   The overlays themselves stay visible; only motion stops.
+   =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  [data-module-theme="novel"].viewer-page::before,
+  [data-module-theme="scifi"].viewer-page::before,
+  [data-module-theme="scifi"].viewer-page::after,
+  [data-module-theme="kids"].viewer-page::before,
+  [data-module-theme="pixel"].viewer-page::before,
+  [data-module-theme="slingshot"].viewer-page::before {
+    animation: none !important;
+  }
+
+  /* Also freeze theme-specific page-turn animations for safety. */
+  [data-module-theme="slingshot"] .book--flip-right,
+  [data-module-theme="slingshot"] .book--flip-left {
+    animation: none !important;
+  }
+}
+
+
+/* ===================================================================
+   Stacking guard for animated themes
+   -------------------------------------------------------------------
+   The decorative ::before / ::after overlays above sit at z-index 0
+   on the .viewer-page. The ::after overlays in particular would
+   paint AFTER the body in DOM order at the same level, which could
+   layer the bird/comet on top of the book. Explicitly lift the body
+   so the book always paints above the decorations. Toolbar already
+   has z-index: 10 and is unaffected.
+   =================================================================== */
+[data-module-theme="novel"]     .viewer-body,
+[data-module-theme="scifi"]     .viewer-body,
+[data-module-theme="kids"]      .viewer-body,
+[data-module-theme="pixel"]     .viewer-body,
+[data-module-theme="slingshot"] .viewer-body {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ===================================================================
+   ===== READER MODE — THEME-AWARE OVERRIDES =========================
+   -------------------------------------------------------------------
+   Phase 2: text-only reader view that lives in the .viewer-body slot
+   instead of the PDF book. Most styling lives in ReaderView.css; this
+   block only adjusts the typography for each theme so the reader
+   inherits the correct mood (serif/cyan/comic/pixel/cream).
+
+   Invariants:
+     • Never tints PDF canvas/text/annotations — those selectors stay
+       untouched.
+     • Only paints elements inside .reader-view-container.
+     • Switching to "Default" falls through to ReaderView.css defaults.
+   =================================================================== */
+
+/* ---------- Default / "none" ------------------------------------- */
+/* Falls through to ReaderView.css. No overrides needed. */
+
+/* ---------- Novel ------------------------------------------------ */
+[data-module-theme="novel"] .reader-view-container {
+  background: #ffffff;
+  box-shadow:
+    0 8px 24px rgba(74, 47, 23, 0.25),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.4);
+  color: #2a1a08;
+}
+
+[data-module-theme="novel"] .reader-view {
+  color: #2a1a08;
+}
+
+[data-module-theme="novel"] .reader-view__h1,
+[data-module-theme="novel"] .reader-view__h2,
+[data-module-theme="novel"] .reader-view__h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  color: #4a2f17;
+}
+
+[data-module-theme="novel"] .reader-view__h1::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 1px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #c9a227, transparent);
+}
+
+[data-module-theme="novel"] .reader-view__p,
+[data-module-theme="novel"] .reader-view__ul,
+[data-module-theme="novel"] .reader-view__ol {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #2a1a08;
+}
+
+[data-module-theme="novel"] .reader-view__page-indicator {
+  color: #6b4a2a;
+  border-top-color: rgba(201, 162, 39, 0.4);
+}
+
+[data-module-theme="novel"] .reader-image-placeholder {
+  border-color: #6b4a2a;
+  background: rgba(201, 162, 39, 0.08);
+}
+[data-module-theme="novel"] .reader-image-placeholder__caption {
+  color: #6b4a2a;
+}
+
+/* ---------- Sci-Fi ----------------------------------------------- */
+[data-module-theme="scifi"] .reader-view-container {
+  background: #050a10;
+  box-shadow:
+    0 0 24px rgba(0, 234, 255, 0.25),
+    inset 0 0 0 1px rgba(0, 234, 255, 0.25);
+  color: #d6f7ff;
+}
+
+[data-module-theme="scifi"] .reader-view {
+  color: #d6f7ff;
+}
+
+[data-module-theme="scifi"] .reader-view__h1,
+[data-module-theme="scifi"] .reader-view__h2,
+[data-module-theme="scifi"] .reader-view__h3 {
+  color: #00eaff;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px rgba(0, 234, 255, 0.55);
+}
+
+[data-module-theme="scifi"] .reader-view__p,
+[data-module-theme="scifi"] .reader-view__ul,
+[data-module-theme="scifi"] .reader-view__ol {
+  color: #d6f7ff;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+}
+
+[data-module-theme="scifi"] .reader-view__page-indicator {
+  color: rgba(0, 234, 255, 0.65);
+  border-top-color: rgba(0, 234, 255, 0.25);
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+[data-module-theme="scifi"] .reader-image-placeholder {
+  border-color: rgba(0, 234, 255, 0.45);
+  background: rgba(0, 234, 255, 0.06);
+}
+[data-module-theme="scifi"] .reader-image-placeholder__box {
+  background: #000;
+  color: rgba(0, 234, 255, 0.65);
+}
+[data-module-theme="scifi"] .reader-image-placeholder__caption {
+  color: rgba(0, 234, 255, 0.7);
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+/* ---------- Kids ------------------------------------------------- */
+[data-module-theme="kids"] .reader-view-container {
+  background: #ffffff;
+  box-shadow:
+    0 8px 24px rgba(58, 74, 107, 0.18),
+    inset 0 0 0 2px #ffe2b3;
+  border-radius: 18px;
+  color: #3a4a6b;
+}
+
+[data-module-theme="kids"] .reader-view {
+  color: #3a4a6b;
+}
+
+[data-module-theme="kids"] .reader-view__h1,
+[data-module-theme="kids"] .reader-view__h2,
+[data-module-theme="kids"] .reader-view__h3 {
+  font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', cursive;
+  color: #3a4a6b;
+  font-style: normal;
+  letter-spacing: 0.01em;
+}
+[data-module-theme="kids"] .reader-view__h1 { color: #d94f8e; }
+[data-module-theme="kids"] .reader-view__h2 { color: #4a7eb5; }
+[data-module-theme="kids"] .reader-view__h3 { color: #6aaa6a; }
+
+[data-module-theme="kids"] .reader-view__p,
+[data-module-theme="kids"] .reader-view__ul,
+[data-module-theme="kids"] .reader-view__ol {
+  color: #3a4a6b;
+  font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', cursive;
+  text-indent: 0;
+  text-align: left;
+  line-height: 1.85;
+}
+
+[data-module-theme="kids"] .reader-view__page-indicator {
+  color: #d94f8e;
+  border-top-color: #ffe2b3;
+}
+
+[data-module-theme="kids"] .reader-image-placeholder {
+  border-color: #ffc1d8;
+  background: #fff5f9;
+}
+[data-module-theme="kids"] .reader-image-placeholder__caption {
+  color: #d94f8e;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive;
+}
+
+/* ---------- Pixel Art -------------------------------------------- */
+[data-module-theme="pixel"] .reader-view-container {
+  background: #0e2f15;
+  border-radius: 0;
+  box-shadow:
+    0 0 0 2px #65d977,
+    0 0 0 4px #0e2f15,
+    0 0 0 6px #65d977;
+  margin: 20px;
+  color: #c8f5d4;
+  image-rendering: pixelated;
+}
+
+[data-module-theme="pixel"] .reader-view {
+  color: #c8f5d4;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+[data-module-theme="pixel"] .reader-view__h1,
+[data-module-theme="pixel"] .reader-view__h2,
+[data-module-theme="pixel"] .reader-view__h3 {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  color: #65d977;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-style: normal;
+  text-shadow: 2px 2px 0 #0e2f15;
+}
+[data-module-theme="pixel"] .reader-view__h1 { font-size: 1.4rem; line-height: 1.4; }
+[data-module-theme="pixel"] .reader-view__h2 { font-size: 1.1rem; line-height: 1.4; }
+[data-module-theme="pixel"] .reader-view__h3 { font-size: 0.95rem; line-height: 1.4; }
+
+[data-module-theme="pixel"] .reader-view__p,
+[data-module-theme="pixel"] .reader-view__ul,
+[data-module-theme="pixel"] .reader-view__ol {
+  font-family: 'Courier New', Consolas, monospace;
+  color: #c8f5d4;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  text-indent: 0;
+  text-align: left;
+}
+
+[data-module-theme="pixel"] .reader-view__page-indicator {
+  color: #65d977;
+  border-top-color: #2d8c3a;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+[data-module-theme="pixel"] .reader-image-placeholder {
+  border-radius: 0;
+  border-style: solid;
+  border-color: #65d977;
+  background: #1a5a25;
+}
+[data-module-theme="pixel"] .reader-image-placeholder__box {
+  background: #0e2f15;
+  color: #65d977;
+  border-radius: 0;
+}
+[data-module-theme="pixel"] .reader-image-placeholder__caption {
+  color: #65d977;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-style: normal;
+  font-size: 0.7rem;
+}
+
+/* ---------- Slingshot -------------------------------------------- */
+[data-module-theme="slingshot"] .reader-view-container {
+  background: rgba(74, 47, 23, 0.88);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 2px #c9a227;
+  color: #fff8e0;
+  border-radius: 14px;
+}
+
+[data-module-theme="slingshot"] .reader-view {
+  color: #fff8e0;
+}
+
+[data-module-theme="slingshot"] .reader-view__h1,
+[data-module-theme="slingshot"] .reader-view__h2,
+[data-module-theme="slingshot"] .reader-view__h3 {
+  font-family: 'Fredoka', 'Fredoka One', 'Comic Sans MS', sans-serif;
+  font-style: normal;
+  color: #ffd766;
+  letter-spacing: 0.02em;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+[data-module-theme="slingshot"] .reader-view__p,
+[data-module-theme="slingshot"] .reader-view__ul,
+[data-module-theme="slingshot"] .reader-view__ol {
+  color: #fff8e0;
+  font-family: 'Fredoka', 'Inter', system-ui, sans-serif;
+}
+
+[data-module-theme="slingshot"] .reader-view__page-indicator {
+  color: #ffd766;
+  border-top-color: rgba(201, 162, 39, 0.5);
+  font-family: 'Fredoka', 'Inter', system-ui, sans-serif;
+}
+
+[data-module-theme="slingshot"] .reader-image-placeholder {
+  border-color: #c9a227;
+  background: rgba(255, 248, 224, 0.1);
+}
+[data-module-theme="slingshot"] .reader-image-placeholder__caption {
+  color: #ffd766;
+}

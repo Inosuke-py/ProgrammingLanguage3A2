@@ -1,0 +1,473 @@
+/* ============================================================
+   GameLobby — pre-game lobby room (skeumorphic)
+   ------------------------------------------------------------
+   Every surface here is "carved" out of the page color via
+   --shadow-skeuo. Empty slots use the inset variant so they
+   feel like hollow wells you can fill. The user's own slot
+   gets a subtle gold ring so they can spot themselves.
+   ============================================================ */
+
+.lobby-page {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-6);
+  /* Clear the fixed navbar (matches Dashboard / Quiz / Modules pages). */
+  padding: calc(var(--space-16) + 20px) var(--space-6) var(--space-12);
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: calc(100vh - 80px);
+}
+@media (max-width: 1100px) {
+  .lobby-page { grid-template-columns: 1fr; }
+}
+
+.lobby-page__main { min-width: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+
+/* HEADER */
+.lobby-page__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.lobby-page__title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-3xl);
+  margin: 0;
+}
+.lobby-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.lobby-back:hover { box-shadow: var(--shadow-skeuo-hover); color: var(--color-text-primary); transform: translateY(-1px); }
+.lobby-back:active { box-shadow: var(--shadow-skeuo-pressed); transform: translateY(0); }
+
+.lobby-page__header-spacer { width: 80px; }   /* visual balance against the back btn */
+
+/* ERROR / TOAST */
+.lobby-error {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo-inset);
+  color: var(--color-danger, #dc2626);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.lobby-toast {
+  position: fixed; top: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: var(--surface-skeuo-elevated);
+  box-shadow: var(--shadow-skeuo-hover);
+  border-radius: var(--radius-md);
+  z-index: 1000;
+  font-size: var(--text-sm);
+  animation: toast-in 0.3s ease-out;
+}
+.lobby-toast--warn { color: var(--color-danger, #dc2626); }
+@keyframes toast-in {
+  from { transform: translate(-50%, -10px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* QUIZ ROW */
+.lobby-card {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+.lobby-card--quiz {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-4);
+}
+.lobby-card__head { flex: 1; min-width: 0; }
+.lobby-card__title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-2xl);
+  margin: 4px 0 0;
+}
+
+/* SECTIONS */
+.lobby-section {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+.lobby-section__head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+.lobby-section__title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin: 0;
+}
+.lobby-section__count {
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+  margin-left: 4px;
+}
+
+/* SLOTS */
+.lobby-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+.lobby-slots--single {
+  grid-template-columns: minmax(220px, 320px);
+}
+
+.slot {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 0;
+  overflow: hidden;
+  transition: box-shadow var(--duration-normal), transform var(--duration-fast);
+}
+.slot__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-4);
+  min-height: 140px;
+}
+.slot__label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* Empty slot — INSET / hollow well */
+.slot--empty {
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  color: var(--color-text-tertiary);
+}
+.slot--empty .slot__inner svg { opacity: 0.5; }
+
+/* Occupied slot — RAISED carved card */
+.slot--occupied {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+}
+.slot__name {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-primary);
+  text-align: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.slot__crown { color: var(--color-accent); }
+.slot__me-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.slot__status { font-size: var(--text-xs); }
+.slot__ready {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #22c55e;
+  font-weight: 500;
+}
+.slot__waiting { color: var(--color-text-tertiary); }
+
+/* Your own slot — gold accent ring */
+.slot--me {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* Ready slot — subtle green-tinted bevel */
+.slot--ready {
+  /* keep skeuo treatment but add a thin green inner stroke */
+  box-shadow:
+    var(--shadow-skeuo),
+    inset 0 0 0 1px rgba(34, 197, 94, 0.4);
+}
+
+/* Spectator slot — slightly cooler tone */
+.slot--spectator .slot__inner svg { color: var(--color-text-secondary); }
+
+/* Kick button — inset chip in the top-right corner of an occupied slot */
+.slot__kick {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.slot__kick:hover:not(:disabled) {
+  color: var(--color-danger, #dc2626);
+  box-shadow: var(--shadow-skeuo);
+}
+.slot__kick:active:not(:disabled) { box-shadow: var(--shadow-skeuo-pressed); }
+.slot__kick:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ACTION BAR */
+.lobby-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  padding: var(--space-5);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+}
+.lobby-actions .btn { min-width: 160px; }
+
+/* SIDEBAR */
+.lobby-sidebar {
+  position: sticky;
+  top: calc(var(--space-16) + 8px);
+  align-self: start;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  height: fit-content;
+  max-height: calc(100vh - var(--space-20));
+  overflow-y: auto;
+}
+.lobby-sidebar__head {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 600; font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+.lobby-sidebar__head span { color: var(--color-text-tertiary); font-weight: 400; margin-left: 2px; }
+.lobby-sidebar__empty {
+  padding: var(--space-4);
+  text-align: center;
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+.lobby-sidebar__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.lobby-sidebar__list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast);
+}
+.lobby-sidebar__list li:hover { background: var(--color-surface-2); }
+.lobby-sidebar__name {
+  flex: 1; min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+
+/* QUIZ PICKER MODAL */
+.lobby-quiz-modal {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+.lobby-quiz-modal__inner {
+  background: var(--surface-skeuo-elevated);
+  box-shadow: var(--shadow-skeuo-hover);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 520px;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.lobby-quiz-modal__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.lobby-quiz-modal__head h3 { margin: 0; font-size: var(--text-lg); }
+.lobby-quiz-modal__close {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  width: 30px; height: 30px;
+  border-radius: var(--radius-full);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.lobby-quiz-modal__close:hover { box-shadow: var(--shadow-skeuo-hover); color: var(--color-text-primary); }
+.lobby-quiz-modal__body {
+  padding: var(--space-3);
+  overflow-y: auto;
+  flex: 1;
+}
+.lobby-quiz-modal__group {
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  padding: 8px 10px 4px;
+  margin: 0;
+}
+.lobby-quiz-row {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  text-align: left;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+.lobby-quiz-row:hover { background: var(--color-surface-2); }
+.lobby-quiz-row > span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lobby-quiz-row__count {
+  flex: 0 0 auto;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+.lobby-quiz-modal__empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-tertiary);
+}
+
+/* LOADING / NOT FOUND */
+.lobby-loading {
+  min-height: 60vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px;
+  color: var(--color-text-tertiary);
+}
+
+
+/* ============================================================
+   Host-side join-request popups (stack at bottom-right)
+   Public-lobby player joins now go through host approval — these
+   stack up if multiple users request at once.
+   ============================================================ */
+.lobby-join-requests {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 1000;
+  max-width: 460px;
+}
+.lobby-join-req {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-skeuo-elevated);
+  box-shadow: var(--shadow-skeuo), inset 0 0 0 1px var(--color-accent);
+  border-radius: var(--radius-lg);
+  animation: gm-invite-in 0.3s ease-out;
+}
+.lobby-join-req svg { color: var(--color-accent); }
+.lobby-join-req__body {
+  flex: 1; min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+.lobby-join-req__body strong { color: var(--color-accent); }
+
+
+/* ============================================================
+   Mobile adjustments (Game Mode unlocked on phones)
+   ============================================================ */
+@media (max-width: 700px) {
+  .lobby-page {
+    padding: calc(var(--space-12) + 12px) var(--space-3) var(--space-8);
+    gap: var(--space-4);
+  }
+
+  .lobby-page__header { gap: var(--space-2); }
+  .lobby-page__header-spacer { display: none; }
+  .lobby-page__title { font-size: var(--text-2xl); }
+
+  /* Slot grid — 2 columns on phones (party5 = 5 slots will wrap to 3 rows). */
+  .lobby-slots { grid-template-columns: repeat(2, 1fr); }
+  .lobby-slots--single { grid-template-columns: 1fr; }
+  .slot__inner { padding: var(--space-3); min-height: 120px; }
+
+  /* Quiz row — stack vertically on phones so the Choose Quiz button
+     gets a full row and is easy to tap. */
+  .lobby-card--quiz { flex-direction: column; align-items: stretch; }
+  .lobby-card--quiz .btn { width: 100%; justify-content: center; }
+
+  /* Action bar — column-stack so each big button gets its own row. */
+  .lobby-actions {
+    flex-direction: column;
+    padding: var(--space-3);
+  }
+  .lobby-actions .btn { width: 100%; min-width: 0; }
+
+  /* Sidebar becomes a top section in single-col layout (already
+     handled by the 1100px breakpoint). Make it scroll horizontally
+     for online users to save vertical space. */
+  .lobby-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  /* Quiz picker modal — full-screen on phones. */
+  .lobby-quiz-modal { padding: 0; }
+  .lobby-quiz-modal__inner {
+    max-width: none;
+    max-height: 100vh; max-height: 100dvh;
+    height: 100vh; height: 100dvh;
+    border-radius: 0;
+  }
+
+  /* Pending join-request popups: stack at bottom, full width. */
+  .lobby-join-requests {
+    left: 12px; right: 12px; bottom: 12px;
+    max-width: none;
+  }
+  .lobby-join-req {
+    flex-wrap: wrap;
+  }
+  .lobby-join-req__body { flex-basis: 100%; }
+  .lobby-join-req .btn { flex: 1 1 calc(50% - 4px); }
+}
+
+@media (max-width: 380px) {
+  .lobby-slots { grid-template-columns: 1fr; }
+}

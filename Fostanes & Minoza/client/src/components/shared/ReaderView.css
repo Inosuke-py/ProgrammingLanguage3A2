@@ -1,0 +1,212 @@
+/* ===================================================================
+   READER VIEW
+   -------------------------------------------------------------------
+   Wattpad-style single-column chapter renderer for a module's
+   extracted text content. Inherits theme tokens from the parent
+   .viewer-page[data-module-theme="<id>"] so each theme automatically
+   recolors the typography. Per-theme overrides live in ModuleViewer.css.
+
+   The container takes the place of the .book in the .viewer-body
+   flex slot. It scrolls internally so long pages don't overflow the
+   viewport.
+   =================================================================== */
+
+.reader-view-container {
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-surface-1);
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-skeuo, 0 4px 20px rgba(0, 0, 0, 0.3));
+  color: var(--color-text-primary);
+}
+
+.reader-view {
+  display: block;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  color: var(--color-text-primary);
+}
+
+/* Loading / empty state container */
+.reader-view--state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 240px;
+  padding: 48px 24px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.reader-view--state .spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ----- Headings -------------------------------------------------- */
+.reader-view__h1,
+.reader-view__h2,
+.reader-view__h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+}
+
+.reader-view__h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.4em 0 0.6em;
+}
+.reader-view__h1:first-child { margin-top: 0; }
+
+.reader-view__h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.3em 0 0.55em;
+}
+
+.reader-view__h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.1em 0 0.5em;
+}
+
+/* ----- Paragraph ------------------------------------------------- */
+.reader-view__p {
+  font-family: var(--font-serif, Georgia, 'Times New Roman', serif);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  text-align: justify;
+  text-indent: 1.2em;
+  margin: 0 0 1em 0;
+  color: var(--color-text-primary);
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* The first paragraph after a heading should not be indented — it's
+   the start of a fresh "section" and looks cleaner without indent. */
+.reader-view__h1 + .reader-view__p,
+.reader-view__h2 + .reader-view__p,
+.reader-view__h3 + .reader-view__p {
+  text-indent: 0;
+}
+
+/* Empty paragraph -> vertical breathing room without an empty <p>. */
+.reader-view__spacer {
+  height: 0.9em;
+}
+
+/* ----- Lists ----------------------------------------------------- */
+.reader-view__ul,
+.reader-view__ol {
+  padding-left: 1.5em;
+  margin: 0 0 1em 0;
+  font-family: var(--font-serif, Georgia, 'Times New Roman', serif);
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.reader-view__ul li,
+.reader-view__ol li {
+  line-height: 1.7;
+  margin-bottom: 0.35em;
+}
+
+/* ----- Real image (phase 3) -------------------------------------- */
+.reader-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5em auto;
+  max-width: 100%;
+}
+
+.reader-image img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  background: var(--color-surface-2, transparent);
+  object-fit: contain;
+}
+
+/* ----- Image placeholder (phase 2) ------------------------------- */
+.reader-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  margin: 1.5em auto;
+  border: 1px dashed var(--color-border, currentColor);
+  border-radius: 8px;
+  background: var(--color-surface-2, transparent);
+  opacity: 0.85;
+  max-width: 100%;
+}
+
+.reader-image-placeholder__box {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-1, transparent);
+  border-radius: 6px;
+  color: var(--color-text-tertiary);
+  min-height: 80px;
+}
+
+.reader-image-placeholder__caption {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ----- Page indicator ------------------------------------------- */
+.reader-view__page-indicator {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border, rgba(128, 128, 128, 0.2));
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+}
+
+/* ----- Responsive ------------------------------------------------ */
+@media (max-width: 768px) {
+  .reader-view-container {
+    margin: 8px;
+    border-radius: 8px;
+  }
+  .reader-view {
+    padding: 20px 16px 64px;
+  }
+  .reader-view__h1 { font-size: 1.6rem; }
+  .reader-view__h2 { font-size: 1.3rem; }
+  .reader-view__h3 { font-size: 1.1rem; }
+  .reader-view__p,
+  .reader-view__ul,
+  .reader-view__ol {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+}

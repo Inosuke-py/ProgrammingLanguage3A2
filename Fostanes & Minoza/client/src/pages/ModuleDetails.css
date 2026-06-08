@@ -1,0 +1,163 @@
+/* ===== MODULE DETAILS PAGE ===== */
+.detail-page { padding-top: 72px; min-height: 100vh; }
+
+.detail-back {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm); font-weight: 500;
+  background: none; border: none; cursor: pointer;
+  padding: var(--space-2) 0;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+.detail-back:hover { color: var(--color-accent); }
+
+/* Layout: cover left, info right */
+.detail-layout {
+  display: flex; gap: var(--space-8);
+  align-items: flex-start;
+}
+
+/* ===== BOOK COVER ===== */
+.detail-cover { flex-shrink: 0; }
+.detail-cover__book {
+  width: 200px; height: 270px;
+  display: flex; position: relative;
+  filter: drop-shadow(8px 8px 24px rgba(0,0,0,0.4));
+}
+.detail-cover__spine {
+  width: 20px; height: 100%;
+  background: linear-gradient(180deg, hsl(35 70% 28%), hsl(35 50% 18%));
+  border-radius: 4px 0 0 4px;
+  box-shadow: inset -2px 0 4px rgba(0,0,0,0.3);
+}
+.detail-cover__front {
+  flex: 1; height: 100%;
+  background: hsl(40 20% 94%);
+  border-radius: 0 6px 6px 0;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid hsl(35 40% 25%);
+  border-left: none;
+}
+.detail-cover__front .react-pdf__Page {
+  display: flex !important;
+  justify-content: center;
+  align-items: flex-start;
+}
+.detail-cover__front canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0 6px 6px 0;
+}
+.detail-cover__placeholder {
+  width: 100%; height: 260px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-accent);
+}
+.detail-cover__pages {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-2);
+}
+
+/* ===== INFO SECTION ===== */
+.detail-info { flex: 1; min-width: 0; }
+.detail-title {
+  font-size: var(--text-3xl); font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+  margin-bottom: var(--space-5);
+}
+
+/* Edit title */
+.detail-edit { margin-bottom: var(--space-5); }
+.detail-edit__input {
+  width: 100%; padding: var(--space-3);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--text-lg); font-weight: 600;
+  font-family: inherit;
+}
+.detail-edit__input:focus { border-color: var(--color-accent); outline: none; }
+.detail-edit__actions {
+  display: flex; gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Action buttons */
+.detail-actions {
+  display: flex; gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.detail-actions .btn {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+}
+
+.btn--accent {
+  background: linear-gradient(135deg, hsl(280 55% 50%), hsl(300 45% 45%));
+  color: #fff; border: none;
+}
+.btn--accent:hover {
+  background: linear-gradient(135deg, hsl(280 55% 55%), hsl(300 45% 50%));
+  transform: translateY(-1px);
+}
+
+/* Metadata */
+.detail-meta {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+.detail-meta__row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.detail-meta__row:last-child { border-bottom: none; }
+.detail-meta__label {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+.detail-meta__value {
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-primary);
+  text-align: right; max-width: 60%;
+  word-break: break-all;
+}
+.detail-meta__value--green { color: hsl(140 60% 55%); }
+
+/* Management buttons */
+.detail-manage {
+  display: flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.btn--danger { color: hsl(0 70% 60%) !important; }
+.btn--danger:hover { background: hsl(0 70% 60% / 0.1) !important; }
+
+/* Loading */
+.detail-loading {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; gap: var(--space-3);
+  color: var(--color-text-tertiary);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .detail-layout {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .detail-cover__book { width: 160px; height: 215px; }
+  .detail-actions { justify-content: center; }
+  .detail-manage { justify-content: center; }
+  .detail-title { font-size: var(--text-2xl); }
+}

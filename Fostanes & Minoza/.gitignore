@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build
+client/dist/
+client/build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Gemini
+.gemini/
+
+# Local docs / system documentation (not for repo)
+LEXARA_SYSTEM_DOCUMENT.md
+LEXARA_SYSTEM_DOCUMENT.docx
+LEXARA_SYSTEM_DOCUMENT_v2.docx
+build_docx.py
+make_diagrams.py
+docs/
+
+# Local agent / scratch context
+claude/
+context.md
+skills/
+
+
+# Per-module extracted reader images (runtime artifacts, regenerated on upload)
+server/src/uploads/modules/*/
+
+# Newly uploaded PDFs (cached on the server volume; the originals live in
+# DB blobs). Don't ship test-user uploads in the repo.
+# Note: existing committed PDFs are explicitly listed below to keep them tracked.
+server/src/uploads/modules/*.pdf
+!server/src/uploads/modules/0ea28cc7-335e-4f5c-9c9a-b437a0d3b58d.pdf
+!server/src/uploads/modules/497f8f1b-cd90-40f4-ba18-a350d0ce7130.pdf
+!server/src/uploads/modules/7e6b470d-c4aa-4e94-a41b-994da80ef95a.pdf
+!server/src/uploads/modules/cb913ed1-463e-427b-8e94-d2ea2497cf88.pdf
+
+
+# Temp commit-message file used by the dev workflow on Windows because
+# PowerShell mangles multi-line `git commit -m` arguments with colons.
+.commit-msg.tmp

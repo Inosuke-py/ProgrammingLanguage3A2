@@ -1,0 +1,363 @@
+/* ============================================================
+   Game Mode — Lobby List (skeuomorphic)
+   ------------------------------------------------------------
+   Uses the existing --surface-skeuo / --shadow-skeuo system so
+   panels feel "carved" out of the page. Sunken inputs and rows
+   use the inset surface + inset shadow for the same light
+   direction as the rest of the app.
+   ============================================================ */
+
+.gm-list {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-6);
+  /* Match every other authenticated page: clear the fixed navbar so
+     the page header doesn't render under it. The navbar is ~64px +
+     padding-block: var(--space-4) on each side, so calc(--space-16) +
+     20px gives a clean gap. */
+  padding: calc(var(--space-16) + 20px) var(--space-6) var(--space-12);
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: calc(100vh - 80px);
+}
+@media (max-width: 1100px) {
+  .gm-list { grid-template-columns: 1fr; }
+}
+
+.gm-list__main { min-width: 0; }
+
+.gm-list__header { margin-bottom: var(--space-6); }
+.gm-list__title {
+  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+  font-family: var(--font-serif);
+  font-style: italic;
+  margin: var(--space-2) 0;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.gm-list__subtitle {
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+/* Error chip — sits in a sunken pocket so it feels like a stamped warning. */
+.gm-list__error {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  color: var(--color-danger, #dc2626);
+  border: none;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* Resume banner — raised tile with a gold accent rim. */
+.gm-list__resume {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-skeuo-elevated);
+  box-shadow:
+    var(--shadow-skeuo),
+    inset 0 0 0 1px var(--color-accent-muted);
+  border: none;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+}
+.gm-list__resume strong { color: var(--color-text-primary); }
+.gm-list__resume span { color: var(--color-text-tertiary); }
+
+.gm-list__section { margin-bottom: var(--space-8); }
+.gm-list__section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.gm-list__section-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  font-family: var(--font-serif);
+  font-style: italic;
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+/* Refresh button — small carved disc. */
+.gm-list__refresh {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.gm-list__refresh:hover { box-shadow: var(--shadow-skeuo-hover); transform: translateY(-1px); color: var(--color-text-primary); }
+.gm-list__refresh:active { box-shadow: var(--shadow-skeuo-pressed); transform: translateY(0); }
+.gm-list__hint {
+  font-size: var(--text-sm); color: var(--color-text-tertiary);
+  margin-top: var(--space-3);
+  font-style: italic;
+}
+
+/* Mode picker tiles — raised cards. */
+.gm-list__modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+.gm-mode-card {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-text-secondary);
+  transition: box-shadow var(--duration-normal), transform var(--duration-normal), color var(--duration-normal);
+  min-height: 130px;
+}
+.gm-mode-card svg { color: var(--color-accent); }
+.gm-mode-card strong {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif); font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+.gm-mode-card span {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+.gm-mode-card:hover:not(:disabled) {
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-2px);
+  color: var(--color-text-primary);
+}
+.gm-mode-card:active:not(:disabled) {
+  box-shadow: var(--shadow-skeuo-pressed);
+  transform: translateY(0);
+}
+.gm-mode-card:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: var(--shadow-skeuo-pressed); }
+
+/* Code input — sunken slot, like a pneumatic-tube receipt. */
+.gm-list__code { display: flex; gap: var(--space-2); }
+.gm-list__code input {
+  flex: 1; max-width: 260px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  letter-spacing: 0.20em;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+}
+.gm-list__code input:focus {
+  outline: none;
+  box-shadow:
+    var(--shadow-skeuo-inset),
+    0 0 0 2px var(--color-accent);
+}
+
+/* Public lobby rows — flat-bed plate of carved tiles. */
+.gm-list__rows {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-lg);
+}
+.gm-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.gm-row:hover { box-shadow: var(--shadow-skeuo-hover); transform: translateY(-1px); }
+.gm-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gm-row__main strong {
+  font-size: var(--text-base); color: var(--color-text-primary);
+  font-family: var(--font-serif); font-style: italic;
+}
+.gm-row__main span { font-size: var(--text-sm); color: var(--color-text-tertiary); }
+
+.gm-list__loading, .gm-list__empty {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border: none;
+  border-radius: var(--radius-md);
+  font-style: italic;
+}
+
+/* SIDEBAR — sticky carved panel. */
+.gm-list__sidebar {
+  position: sticky; top: calc(var(--space-16) + 8px);
+  align-self: start;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  height: fit-content;
+  max-height: calc(100vh - var(--space-20));
+  overflow-y: auto;
+}
+.gm-list__sidebar-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: var(--text-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-serif); font-style: italic;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.gm-list__sidebar-head svg { color: var(--color-accent); }
+.gm-list__sidebar-head span { color: var(--color-text-tertiary); font-weight: 400; font-size: var(--text-sm); }
+
+.gm-list__online {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.gm-list__online li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  cursor: default;
+  transition: background var(--duration-fast);
+}
+.gm-list__online li:hover {
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  color: var(--color-text-primary);
+}
+
+/* LIVE INVITE POPUP — raised brass plaque. */
+.gm-invite {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-skeuo-elevated);
+  box-shadow:
+    var(--shadow-skeuo),
+    inset 0 0 0 1px var(--color-accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  max-width: 460px;
+  z-index: 1000;
+  animation: gm-invite-in 0.3s var(--ease-out, ease-out);
+}
+@keyframes gm-invite-in {
+  from { transform: translateY(20px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.gm-invite svg { color: var(--color-accent); }
+.gm-invite__body {
+  flex: 1; min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+.gm-invite__body strong { color: var(--color-accent); }
+
+
+/* Pending join-request popup (requester side) */
+.gm-invite--pending {
+  bottom: 24px;
+}
+.gm-invite--pending.is-declined {
+  box-shadow: var(--shadow-skeuo), inset 0 0 0 1px #dc2626;
+}
+.gm-invite--pending.is-declined svg { color: #dc2626; }
+.gm-invite--pending .gm-invite__body span {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+
+/* ============================================================
+   Mobile adjustments (Game Mode unlocked on phones)
+   ============================================================ */
+@media (max-width: 700px) {
+  .gm-list {
+    padding: calc(var(--space-12) + 12px) var(--space-3) var(--space-8);
+    gap: var(--space-4);
+  }
+  .gm-list__title { font-size: clamp(2rem, 8vw, 2.6rem); }
+  .gm-list__subtitle { font-size: var(--text-sm); }
+
+  /* Mode picker: 2 cols on small screens, 1 on very narrow. */
+  .gm-list__modes { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+  .gm-mode-card { min-height: 110px; padding: var(--space-4); }
+  .gm-mode-card strong { font-size: var(--text-xl); }
+
+  /* Open lobby rows wrap so Join/Spectate buttons drop below the host info. */
+  .gm-row {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .gm-row__main { flex-basis: calc(100% - 60px); }
+  .gm-row .btn { flex: 1 1 auto; min-width: 110px; }
+
+  /* Sidebar becomes a top section on phones (already single-col via the
+     1100px breakpoint). Make it more compact. */
+  .gm-list__sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  /* Live invite popup full-width near the bottom. The body text gets
+     its own row at full width; the buttons share a second row, each
+     at 50% so they're always equal-sized and always tappable. */
+  .gm-invite,
+  .gm-invite--pending {
+    left: 12px; right: 12px; bottom: 12px;
+    max-width: none;
+    flex-wrap: wrap;
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+  .gm-invite > svg,
+  .gm-invite--pending > svg {
+    flex: 0 0 auto;
+  }
+  .gm-invite__body {
+    flex: 1 1 calc(100% - 32px);
+    min-width: 0;
+    line-height: 1.4;
+  }
+  .gm-invite .btn,
+  .gm-invite--pending .btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .gm-list__modes { grid-template-columns: 1fr; }
+}

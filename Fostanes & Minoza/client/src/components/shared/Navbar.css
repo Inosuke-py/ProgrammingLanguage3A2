@@ -1,0 +1,306 @@
+/* =============================================
+   NAVBAR — Dark Theme + Full Mobile Fix
+   ============================================= */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  padding-block: var(--space-4);
+  /* Always-on backdrop so page content never bleeds under the navbar.
+     Uses the page color at high opacity + blur for the iOS-glass feel.
+     `color-mix` makes this theme-aware automatically. */
+  background: color-mix(in srgb, var(--color-surface-0) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: padding-block var(--duration-normal) var(--ease-in-out),
+              border-color var(--duration-normal) var(--ease-in-out);
+}
+
+.navbar--scrolled {
+  background: color-mix(in srgb, var(--color-surface-0) 95%, transparent);
+  border-bottom: 1px solid var(--color-border);
+  padding-block: var(--space-3);
+}
+
+.navbar__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;   /* brand | nav | user */
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.navbar__brand {
+  display: flex; align-items: center; gap: var(--space-3);
+  color: var(--color-text-primary);
+  transition: opacity var(--duration-fast);
+  z-index: 110;
+  justify-self: start;                   /* anchor brand to LEFT */
+}
+.navbar__brand:hover { opacity: 0.8; }
+.navbar__brand svg { color: var(--color-accent); }
+.navbar__brand-text { font-size: var(--text-2xl); }
+
+/* Desktop nav links — center column */
+.navbar__links--desktop {
+  display: flex; align-items: center; gap: var(--space-2);
+  justify-self: center;                  /* anchor nav to CENTER */
+}
+
+/* Right-side user cluster */
+.navbar__user-cluster--desktop {
+  display: flex; align-items: center; gap: var(--space-3);
+  justify-self: end;                     /* anchor user to RIGHT */
+}
+@media (max-width: 768px) {
+  .navbar__user-cluster--desktop { display: none; }
+}
+
+/* Each clickable nav item gets the carved neumorphic look —
+   only the buttons, not the bar around them. */
+.navbar__link {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  background: var(--surface-skeuo);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  text-decoration: none;
+  transition: color var(--duration-fast), box-shadow var(--duration-fast),
+              transform var(--duration-fast);
+}
+.navbar__link:hover {
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-1px);
+}
+
+.navbar__divider { width: 1px; height: 20px; background: var(--color-border); }
+
+/* User identity is also a clickable-feeling chip → skeuo */
+.navbar__user {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  background: var(--surface-skeuo);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-skeuo);
+}
+.navbar__avatar {
+  width: 28px; height: 28px; border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-accent);
+  object-fit: cover;
+}
+.navbar__avatar-fallback {
+  width: 28px; height: 28px; border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-accent);
+  align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--color-accent);
+}
+.navbar__user-name {
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-primary);
+  /* Cap to one line — long names should ellipsize, not wrap. */
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Logout button — skeuo too */
+.navbar__logout {
+  background: var(--surface-skeuo) !important;
+  box-shadow: var(--shadow-skeuo);
+  border: none !important;
+}
+.navbar__logout:hover {
+  box-shadow: var(--shadow-skeuo-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* Theme toggle — square neumorphic icon button */
+.navbar__theme-toggle {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-skeuo);
+  color: var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast), box-shadow var(--duration-fast),
+              transform var(--duration-fast);
+}
+.navbar__theme-toggle:hover {
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-1px);
+}
+.navbar__theme-toggle:active {
+  box-shadow: var(--shadow-skeuo-pressed);
+}
+
+.navbar__toggle {
+  display: none;
+  color: var(--color-text-primary);
+  z-index: 110;
+  width: 44px; height: 44px;
+  align-items: center; justify-content: center;
+  justify-self: end;                     /* mobile: toggle on the right */
+}
+
+/* ===== MOBILE PORTAL ELEMENTS ===== */
+
+/* Overlay backdrop — rendered on document.body */
+.navbar__overlay {
+  display: none;
+}
+
+/* Mobile slide-out panel — rendered on document.body */
+.navbar__mobile-panel {
+  display: none;
+}
+
+/* ===== MOBILE BREAKPOINT ===== */
+@media (max-width: 768px) {
+  .navbar__inner {
+    /* Collapse to brand | toggle */
+    grid-template-columns: 1fr auto;
+  }
+  .navbar__toggle { display: flex; }
+  .navbar__links--desktop { display: none; }
+
+  /* Full-screen dark backdrop */
+  .navbar__overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: hsl(0 0% 0% / 0.6);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Slide-out panel */
+  .navbar__mobile-panel {
+    display: flex;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(320px, 85vw);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-20) var(--space-6) var(--space-8);
+    background: var(--color-surface-0);
+    border-left: 1px solid var(--color-border);
+    box-shadow: var(--shadow-xl);
+    transform: translateX(100%);
+    transition: transform var(--duration-slow) var(--ease-out) !important;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .navbar__mobile-panel--open { transform: translateX(0); }
+
+  .navbar__mobile-close {
+    position: absolute;
+    top: var(--space-4); right: var(--space-4);
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .navbar__mobile-panel .navbar__link {
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    min-height: 48px;
+  }
+  .navbar__mobile-panel .navbar__link:hover,
+  .navbar__mobile-panel .navbar__link:active {
+    background: var(--color-surface-2);
+  }
+
+  .navbar__mobile-panel .navbar__divider { width: 100%; height: 1px; margin-block: var(--space-2); }
+
+  .navbar__mobile-panel .navbar__user {
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+  }
+
+  .navbar__mobile-panel .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    margin-top: var(--space-2);
+  }
+}
+
+/* ===== DARK-LOCKED NAVBAR ===========================================
+   The homepage (`/`) and module reader (`/modules/:id/read`) stay dark
+   even when the global theme is light. The navbar is rendered as a
+   sibling of those wrappers in App.jsx, so it inherits the global
+   light tokens from <html data-theme="light"> and turns cream while
+   the page below stays dark.
+
+   Re-declare the dark palette locally here — mirroring the local-
+   token approach already used on `.home` — so the navbar always reads
+   dark on those routes regardless of the user's chosen theme.
+   Token values match the dark `:root` block in index.css and the
+   `.home` scope in Home.css. */
+.navbar--dark-locked {
+  /* Surfaces */
+  --color-surface-0: hsl(220, 15%, 5%);
+  --color-surface-1: hsl(220, 13%, 8%);
+  --color-surface-2: hsl(220, 11%, 12%);
+  --color-surface-3: hsl(220, 9%, 17%);
+  --color-surface-elevated: hsl(220, 12%, 10%);
+
+  /* Text */
+  --color-text-primary: hsl(40, 20%, 92%);
+  --color-text-secondary: hsl(40, 10%, 58%);
+  --color-text-tertiary: hsl(40, 6%, 38%);
+  --color-text-inverted: hsl(220, 15%, 5%);
+
+  /* Borders */
+  --color-border: hsl(220, 10%, 14%);
+  --color-border-hover: hsl(220, 10%, 22%);
+  --color-border-accent: hsl(42, 35%, 20%);
+  --color-border-subtle: hsl(220, 10%, 10%);
+
+  /* Skeuomorphic surface — same gradient `.home` uses */
+  --surface-skeuo:
+    linear-gradient(
+      180deg,
+      hsl(220 14% 6%) 0%,
+      hsl(220 15% 5%) 100%
+    );
+  --surface-skeuo-elevated:
+    linear-gradient(
+      180deg,
+      hsl(220 13% 7.5%) 0%,
+      hsl(220 14% 6%) 100%
+    );
+
+  /* Skeuomorphic shadows — copied from the dark `:root` definitions
+     in index.css (NOT the lighter set used in the user's template). */
+  --shadow-skeuo:
+    -8px -8px 16px hsl(220 18% 8% / 0.6),
+    8px 8px 20px hsl(0 0% 0% / 0.7),
+    inset 0 1px 0 hsl(40 50% 95% / 0.06),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.4);
+
+  --shadow-skeuo-hover:
+    -10px -10px 20px hsl(220 18% 8% / 0.7),
+    10px 10px 24px hsl(0 0% 0% / 0.75),
+    inset 0 1px 0 hsl(40 50% 95% / 0.09),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.4);
+
+  --shadow-skeuo-pressed:
+    inset 5px 5px 12px hsl(0 0% 0% / 0.7),
+    inset -5px -5px 12px hsl(220 18% 8% / 0.5),
+    inset 0 1px 0 hsl(0 0% 0% / 0.4);
+}

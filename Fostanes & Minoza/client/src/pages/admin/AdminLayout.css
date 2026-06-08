@@ -1,0 +1,883 @@
+/* =============================================
+   ADMIN LAYOUT — Sidebar + Content
+   ============================================= */
+:root {
+  --admin-sidebar-w: 260px;
+  --admin-sidebar-collapsed: 68px;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-surface-0);
+}
+
+/* ===== SIDEBAR ===== */
+.admin-sidebar {
+  width: var(--admin-sidebar-w);
+  background: var(--color-surface-1);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+.admin-layout--collapsed .admin-sidebar--desktop {
+  width: var(--admin-sidebar-collapsed);
+}
+
+/* Header */
+.admin-sidebar__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  min-height: 64px;
+}
+.admin-sidebar__logo-icon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.admin-sidebar__logo-text {
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+.admin-sidebar__badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+/* Nav links */
+.admin-sidebar__nav {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.admin-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 450;
+  cursor: pointer;
+  width: 100%;
+  text-decoration: none;
+  white-space: nowrap;
+  /* Carved neumorphic look on every nav item */
+  background: var(--surface-skeuo);
+  border: none;
+  box-shadow: var(--shadow-skeuo);
+  transition: color var(--duration-fast), box-shadow var(--duration-fast),
+              transform var(--duration-fast);
+}
+.admin-sidebar__link:hover {
+  color: var(--color-text-primary);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-1px);
+}
+.admin-sidebar__link--active {
+  color: var(--color-accent) !important;
+  background: var(--surface-skeuo) !important;
+  /* Pressed look — sinks INTO the surface to indicate "current page" */
+  box-shadow: var(--shadow-skeuo-pressed) !important;
+  transform: none !important;
+  font-weight: 500;
+}
+
+/* Footer */
+.admin-sidebar__footer {
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  /* Separator below the identity block — groups it with the actions
+     while keeping a visible boundary between "who you are" and
+     "leave the panel." */
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.admin-sidebar__avatar {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-accent);
+  flex-shrink: 0;
+}
+.admin-sidebar__avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.admin-sidebar__user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.admin-sidebar__user-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-sidebar__user-role {
+  font-size: 0.688rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Collapse button (inside header) */
+.admin-sidebar__collapse-toggle {
+  margin-left: auto;
+  width: 28px; height: 28px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-tertiary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.admin-sidebar__collapse-toggle:hover {
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-accent);
+}
+.admin-sidebar__collapse-toggle .rotated {
+  transform: rotate(180deg);
+}
+
+/* ===== MAIN CONTENT ===== */
+.admin-content {
+  flex: 1;
+  margin-left: var(--admin-sidebar-w);
+  padding: var(--space-6) var(--space-8);
+  min-height: 100vh;
+  transition: margin-left 0.25s ease;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.admin-layout--collapsed .admin-content {
+  margin-left: var(--admin-sidebar-collapsed);
+}
+
+/* ===== MOBILE ===== */
+.admin-mobile-toggle {
+  display: none;
+  position: fixed;
+  top: var(--space-4); left: var(--space-4);
+  z-index: 90;
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+.admin-overlay { display: none; }
+
+.admin-sidebar--mobile { display: none; }
+.admin-sidebar__close { display: none; }
+
+@media (max-width: 768px) {
+  .admin-sidebar--desktop { display: none; }
+  .admin-mobile-toggle { display: flex; }
+
+  .admin-content {
+    margin-left: 0;
+    padding: calc(var(--space-16) + 8px) var(--space-4) var(--space-8);
+  }
+
+  .admin-overlay {
+    display: block;
+    position: fixed; inset: 0;
+    background: hsl(0 0% 0% / 0.6);
+    z-index: 998;
+    backdrop-filter: blur(4px);
+  }
+
+  .admin-sidebar--mobile {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: min(280px, 85vw);
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .admin-sidebar--mobile-open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar__close {
+    display: flex;
+    position: absolute;
+    top: var(--space-4); right: var(--space-4);
+    width: 36px; height: 36px;
+    align-items: center; justify-content: center;
+    background: none; border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .admin-sidebar__collapse-toggle { display: none; }
+}
+
+/* =============================================
+   ADMIN SHARED STYLES
+   ============================================= */
+
+/* Page header */
+.admin-page__header {
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.admin-page__title {
+  font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.admin-page__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* Stat cards row */
+.admin-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.admin-stat-card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.admin-stat-card__label {
+  font-size: 0.688rem;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+.admin-stat-card__value {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.admin-stat-card__icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+}
+
+/* Stat cards row at the top of admin views.
+   Same neumorphic carved-out treatment as every other card — no
+   per-card hue, no left accent rule. The icon is the only color cue. */
+.admin-gradient-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.admin-gradient-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  overflow: hidden;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border: none;
+  transition: box-shadow var(--duration-normal) var(--ease-in-out),
+              transform var(--duration-fast) var(--ease-in-out);
+}
+.admin-gradient-card:hover {
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-2px);
+}
+
+.admin-gradient-card__label {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+.admin-gradient-card__value {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.admin-gradient-card__icon {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-5);
+  color: var(--color-accent);
+  opacity: 0.6;
+}
+.admin-gradient-card__sub {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+/* 3-column chart grid */
+.admin-charts-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+}
+
+/* Main chart (full width) */
+.admin-chart-card--main {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* Donut center label */
+.admin-donut-wrap { position: relative; }
+.admin-donut-center {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.admin-donut-center__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.admin-donut-center__label {
+  font-size: 0.688rem;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-donut-legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.admin-donut-legend__item { display: flex; align-items: center; gap: var(--space-2); }
+.admin-donut-legend__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Modern donut (like CRM reference) */
+.admin-donut-modern {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  height: 100%;
+}
+.admin-donut-modern__chart {
+  position: relative;
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+}
+.admin-donut-modern__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.admin-donut-modern__center-label {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.admin-donut-modern__center-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+.admin-donut-modern__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.admin-donut-modern__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.admin-donut-modern__legend-ring {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid;
+  flex-shrink: 0;
+}
+.admin-donut-modern__legend-pct {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.admin-donut-modern__legend-name {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Chart card */
+.admin-chart-card {
+  background: linear-gradient(145deg, hsl(230 15% 11%), hsl(230 12% 9%));
+  border: 1px solid hsl(230 15% 16%);
+  border-radius: 12px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.admin-chart-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.admin-chart-card__title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+}
+
+/* Range toggle */
+.admin-range-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+.admin-range-toggle button {
+  padding: 4px 12px;
+  font-size: 0.688rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  background: none; border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-range-toggle button.active {
+  background: var(--color-surface-1);
+  color: var(--color-accent);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Charts grid */
+.admin-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+@media (max-width: 480px) {
+  .admin-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-charts-grid--3 {
+    grid-template-columns: 1fr;
+  }
+  .admin-gradient-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Admin table */
+.admin-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.admin-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 500;
+  font-size: 0.688rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.admin-table tr:hover td {
+  background: var(--color-surface-2);
+}
+.admin-table__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.admin-table__avatar {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+.admin-table__name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.admin-table__role {
+  font-size: 0.625rem;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.admin-table__role--admin { background: var(--color-accent-subtle); color: var(--color-accent); }
+.admin-table__role--student { background: var(--color-surface-2); color: var(--color-text-tertiary); }
+.admin-table__role--teacher { background: hsl(200 60% 15%); color: hsl(200 80% 65%); }
+.admin-table__role--guest { background: hsl(220 8% 18%); color: hsl(220 8% 70%); }
+
+/* Small "Guest" pill — surfaces guest actors in user lists & activity feed */
+.admin-guest-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.625rem;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  background: hsl(220 8% 18%);
+  color: hsl(220 8% 70%);
+  border: 1px solid hsl(220 8% 25%);
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+/* Activity feed */
+.admin-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.admin-activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  transition: background 0.1s;
+}
+.admin-activity-item:hover {
+  background: var(--color-surface-2);
+}
+.admin-activity-item__avatar {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+.admin-activity-item__icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.admin-activity-item__info {
+  flex: 1; min-width: 0;
+}
+.admin-activity-item__name {
+  font-weight: 500;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+.admin-activity-item__desc {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+.admin-activity-item__time {
+  font-size: 0.688rem;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Search bar */
+.admin-search {
+  position: relative;
+  max-width: 320px;
+}
+.admin-search__icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+.admin-search__input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.admin-search__input:focus {
+  border-color: var(--color-accent);
+}
+.admin-search__input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Pagination */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.admin-pagination button {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-pagination button:hover:not(:disabled) {
+  background: var(--color-surface-1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.admin-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.admin-pagination__info {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  padding: 0 var(--space-3);
+}
+
+/* Empty state */
+.admin-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* Recharts tooltip override */
+.recharts-default-tooltip {
+  background: var(--color-surface-1) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+.recharts-tooltip-label {
+  color: var(--color-text-primary) !important;
+  font-weight: 500 !important;
+}
+.recharts-tooltip-item {
+  color: var(--color-text-secondary) !important;
+}
+
+
+/* Danger ghost button */
+.btn--danger-ghost {
+  background: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  padding: 4px 10px;
+  font-size: 0.688rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.btn--danger-ghost:hover { background: rgba(239,68,68,0.1); }
+.btn--danger-ghost:disabled { opacity: 0.3; cursor: not-allowed; }
+
+
+/* Avatar fallback chip used in admin tables (mirrors the sidebar treatment).
+   Same target size as the real avatar — Google profile pic URLs occasionally
+   return 429/403 and the broken-image icon was leaking through. */
+.admin-table__avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Make the admin-users table actually scrollable on mobile instead of
+   squishing the email column into truncation. The wrapper already has
+   overflow-x: auto; the table just needs a min-width so it doesn't try
+   to fit a viewport that's narrower than the content. */
+.admin-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-table-wrapper .admin-table { min-width: 880px; }
+
+/* Email cell on the admin users table — keep it readable but cap to a
+   sane width so super-long enterprise email addresses don't blow out
+   the row height while the user scrolls horizontally. */
+.admin-table td.admin-table__email,
+.admin-table td.admin-table__email a {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ===================================================================
+   Mobile: stack the admin users table as cards.
+   At <= 600px the wide table stops being scrollable usefully, so we
+   flip it into a column-of-cards layout where each row becomes a
+   readable summary block. The min-width: 880px constraint stays
+   active above 600px so the regular table still works on tablets.
+   =================================================================== */
+@media (max-width: 600px) {
+  .admin-table-wrapper { overflow-x: visible; }
+  .admin-table-wrapper .admin-table { min-width: 0; }
+
+  .admin-table thead { display: none; }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table tr {
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
+    box-shadow: var(--shadow-skeuo);
+  }
+  .admin-table tr:hover td { background: transparent; }
+
+  .admin-table td {
+    border-bottom: none;
+    padding: 6px 0;
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* Field labels rendered from the original column header via data-label */
+  .admin-table td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+  }
+
+  /* The first cell (User column) shows full-width with avatar + name */
+  .admin-table td:first-child {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
+    justify-content: flex-start;
+  }
+  .admin-table td:first-child::before {
+    display: none;
+  }
+
+  .admin-table__email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .admin-table td.admin-table__email,
+  .admin-table td.admin-table__email a {
+    max-width: 60%;
+  }
+}

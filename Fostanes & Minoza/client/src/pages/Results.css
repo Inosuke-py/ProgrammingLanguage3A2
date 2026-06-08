@@ -1,0 +1,136 @@
+/* =============================================
+   RESULTS — Fully Responsive
+   ============================================= */
+.results-empty {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--space-4);
+  color: var(--color-text-tertiary);
+  padding: var(--space-4);
+}
+
+.results-page {
+  min-height: 100vh; min-height: 100dvh;
+  padding-top: calc(var(--space-16) + 20px);
+  padding-bottom: var(--space-12);
+}
+
+/* Score Hero */
+.results-hero {
+  text-align: center;
+  padding: var(--space-8) var(--space-5);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+}
+@media (min-width: 768px) { .results-hero { padding: var(--space-10); } }
+
+.results-hero--pass { border-color: hsl(152 48% 36% / 0.3); }
+.results-hero--fail { border-color: hsl(0 65% 52% / 0.3); }
+
+.results-hero__score-ring {
+  position: relative;
+  width: 100px; height: 100px;
+  margin: 0 auto var(--space-5);
+}
+@media (min-width: 768px) {
+  .results-hero__score-ring { width: 120px; height: 120px; }
+}
+
+.score-ring { width: 100%; height: 100%; }
+
+.results-hero__score-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.results-hero__score-val {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--text-2xl); font-weight: 600;
+  color: var(--color-text-primary);
+}
+@media (min-width: 768px) { .results-hero__score-val { font-size: var(--text-3xl); } }
+
+.results-hero__title {
+  font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl));
+  margin-bottom: var(--space-2);
+}
+
+.results-hero__subtitle { margin-bottom: var(--space-5); font-size: var(--text-sm); }
+@media (min-width: 768px) { .results-hero__subtitle { font-size: var(--text-base); } }
+
+/* Stats */
+.results-stats {
+  display: flex; justify-content: center; gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.results-stat {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs); font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+}
+
+.results-stat--accent {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border-accent);
+}
+
+/* Answer Review */
+.results-review { margin-bottom: var(--space-6); }
+.results-answers { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.result-answer { padding: var(--space-3) var(--space-4) !important; }
+.result-answer--correct { border-left: 3px solid var(--color-success); }
+.result-answer--wrong { border-left: 3px solid var(--color-danger); }
+
+.result-answer__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.result-answer__num {
+  font-family: var(--font-serif); font-style: italic;
+  font-weight: 600; color: var(--color-text-primary);
+}
+
+.result-answer__icon--correct { color: var(--color-success); }
+.result-answer__icon--wrong { color: var(--color-danger); }
+
+.result-answer__details { word-break: break-word; }
+
+.result-answer__row {
+  display: flex; gap: var(--space-2);
+  font-size: var(--text-sm); margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.result-answer__label { color: var(--color-text-tertiary); flex-shrink: 0; }
+.result-answer__correct { color: var(--color-success); font-weight: 500; }
+.result-answer__wrong-text { color: var(--color-danger); font-weight: 500; }
+.result-answer__explanation {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Actions */
+.results-actions {
+  display: flex; justify-content: center; gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .results-actions {
+    flex-direction: column; align-items: stretch;
+  }
+  .results-actions .btn { width: 100%; justify-content: center; }
+}

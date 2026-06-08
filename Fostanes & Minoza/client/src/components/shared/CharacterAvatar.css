@@ -1,0 +1,14 @@
+/* ============================================================
+   CharacterAvatar — base styles
+   ============================================================ */
+.gm-char {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+.gm-char svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

@@ -1,0 +1,309 @@
+/* ============================================================
+   IntroAnimation — first-visit splash overlay
+   ------------------------------------------------------------
+   Deep obsidian backdrop with golden light rays cast over the
+   wordmark. The lockup matches the navbar logo so the FLIP
+   handoff lands on the same exact pixel.
+   ============================================================ */
+
+.intro-anim {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  /* Deeper obsidian. Warm pool only near the bulb, near-black
+     elsewhere. */
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      hsl(220, 14%, 7%) 0%,
+      hsl(220, 16%, 3%) 65%,
+      hsl(220, 18%, 2%) 100%);
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  color: #f5f1e6;
+}
+
+/* GOD-RAYS — soft conic gradient anchored on the lockup. Rotates
+   slowly so the rays drift across the wordmark. Masked to a circle
+   so it fades into the dark background. Sits below the lockup. */
+.intro-anim__rays {
+  position: absolute;
+  /* Default: anchor on viewport center; the JS resets via inline
+     style to track the bulb's actual on-screen position whenever
+     the lockup moves. */
+  top: 50%;
+  left: 50%;
+  width: min(140vw, 1400px);
+  height: min(140vw, 1400px);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    /* Twelve subtle rays radiating from center */
+    conic-gradient(
+      from 0deg,
+      rgba(245, 199, 79, 0.00) 0deg,
+      rgba(245, 199, 79, 0.10) 6deg,
+      rgba(245, 199, 79, 0.00) 12deg,
+      rgba(245, 199, 79, 0.00) 24deg,
+      rgba(245, 199, 79, 0.14) 30deg,
+      rgba(245, 199, 79, 0.00) 36deg,
+      rgba(245, 199, 79, 0.00) 48deg,
+      rgba(245, 199, 79, 0.10) 54deg,
+      rgba(245, 199, 79, 0.00) 60deg,
+      rgba(245, 199, 79, 0.00) 72deg,
+      rgba(245, 199, 79, 0.16) 78deg,
+      rgba(245, 199, 79, 0.00) 84deg,
+      rgba(245, 199, 79, 0.00) 96deg,
+      rgba(245, 199, 79, 0.10) 102deg,
+      rgba(245, 199, 79, 0.00) 108deg,
+      rgba(245, 199, 79, 0.00) 120deg,
+      rgba(245, 199, 79, 0.14) 126deg,
+      rgba(245, 199, 79, 0.00) 132deg,
+      rgba(245, 199, 79, 0.00) 144deg,
+      rgba(245, 199, 79, 0.10) 150deg,
+      rgba(245, 199, 79, 0.00) 156deg,
+      rgba(245, 199, 79, 0.00) 168deg,
+      rgba(245, 199, 79, 0.16) 174deg,
+      rgba(245, 199, 79, 0.00) 180deg,
+      rgba(245, 199, 79, 0.00) 192deg,
+      rgba(245, 199, 79, 0.10) 198deg,
+      rgba(245, 199, 79, 0.00) 204deg,
+      rgba(245, 199, 79, 0.00) 216deg,
+      rgba(245, 199, 79, 0.14) 222deg,
+      rgba(245, 199, 79, 0.00) 228deg,
+      rgba(245, 199, 79, 0.00) 240deg,
+      rgba(245, 199, 79, 0.10) 246deg,
+      rgba(245, 199, 79, 0.00) 252deg,
+      rgba(245, 199, 79, 0.00) 264deg,
+      rgba(245, 199, 79, 0.16) 270deg,
+      rgba(245, 199, 79, 0.00) 276deg,
+      rgba(245, 199, 79, 0.00) 288deg,
+      rgba(245, 199, 79, 0.10) 294deg,
+      rgba(245, 199, 79, 0.00) 300deg,
+      rgba(245, 199, 79, 0.00) 312deg,
+      rgba(245, 199, 79, 0.14) 318deg,
+      rgba(245, 199, 79, 0.00) 324deg,
+      rgba(245, 199, 79, 0.00) 336deg,
+      rgba(245, 199, 79, 0.10) 342deg,
+      rgba(245, 199, 79, 0.00) 360deg);
+  /* Mask so the rays fade out near the edges of the circle,
+     producing soft beams instead of a hard disc. */
+  -webkit-mask-image: radial-gradient(circle, #000 0%, #000 30%, transparent 65%);
+          mask-image: radial-gradient(circle, #000 0%, #000 30%, transparent 65%);
+  filter: blur(2px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 0;
+}
+
+/* Soft golden pool — wider, softer halo behind the bulb. */
+.intro-anim__halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(85vw, 760px);
+  height: min(85vw, 760px);
+  margin-top: calc(min(85vw, 760px) / -2);
+  margin-left: calc(min(85vw, 760px) / -2);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(245, 199, 79, 0.45) 0%,
+    rgba(245, 199, 79, 0.20) 22%,
+    rgba(245, 199, 79, 0.06) 45%,
+    rgba(245, 199, 79, 0) 65%
+  );
+  pointer-events: none;
+  filter: blur(14px);
+  will-change: transform, opacity;
+  z-index: 0;
+}
+
+/* THE LOCKUP — bulb spot + wordmark, moves as one unit.
+   Centered via CSS; framer adds translate/scale on top.
+   Transform-origin stays at TOP LEFT throughout so framer's
+   transforms compose predictably (no origin-switch jumps). */
+.intro-anim__lockup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* CSS-level offset: centers the lockup on viewport, then
+     framer translates from this base position. transform-origin
+     is top-left so scale doesn't drift during the FLIP. */
+  transform-origin: 0 0;
+  /* Note: NOT using translate(-50%, -50%) here — framer handles
+     all centering math via measured bulb-center coordinates. */
+  z-index: 1;
+  will-change: transform;
+}
+
+/* The bulb-spot is the converge point. Dots, core, bulb, and halo
+   all share this origin so their pixels coincide exactly. */
+.intro-anim__bulb-spot {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* DOTS ----------------------------------------------------- */
+
+.intro-anim__dots {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  will-change: transform;
+  /* Force GPU compositing layer to prevent stutter on the
+     long fly-in tween. */
+  transform: translateZ(0);
+  z-index: 3;
+}
+
+.intro-anim__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ffe69a 0%,
+    #f5b942 55%,
+    #c98d12 100%);
+  box-shadow:
+    0 0 24px rgba(245, 185, 66, 0.95),
+    0 0 8px rgba(245, 185, 66, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.18),
+    inset 0 1px 2px rgba(255, 255, 255, 0.55);
+  will-change: transform, opacity;
+  /* GPU layer */
+  transform: translateZ(0);
+}
+
+/* CORE — the gold ball that bridges dots → bulb. */
+.intro-anim__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    #fff5d2 0%,
+    #ffd966 25%,
+    #f5b942 55%,
+    rgba(201, 141, 18, 0.8) 100%);
+  box-shadow:
+    0 0 40px rgba(245, 185, 66, 1),
+    0 0 16px rgba(255, 217, 102, 0.85);
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 2;
+}
+
+/* FLASH — brief white→gold flash at the moment the dots
+   bloom into the bulb. Hides the seam visually. */
+.intro-anim__flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  margin: -40px 0 0 -40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 248, 224, 0.95) 0%,
+    rgba(255, 217, 102, 0.6) 30%,
+    rgba(245, 185, 66, 0) 70%);
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 4;
+  filter: blur(2px);
+}
+
+/* BULB — sits at the same converge point. Sized identical to navbar. */
+.intro-anim__bulb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(42, 78%, 52%);
+  filter:
+    drop-shadow(0 0 14px rgba(245, 185, 66, 0.8))
+    drop-shadow(0 0 6px rgba(245, 185, 66, 0.55));
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+  z-index: 3;
+}
+
+/* WORDMARK — italic serif, weight 400, navbar text size. */
+.intro-anim__word {
+  display: flex;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.563rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--color-text-primary, #f5f1e6);
+  white-space: nowrap;
+  /* Subtle inner glow so the rays painted underneath read on the
+     wordmark. */
+  text-shadow:
+    0 0 18px rgba(245, 185, 66, 0.35),
+    0 0 4px rgba(245, 185, 66, 0.25);
+  position: relative;
+  z-index: 2;
+}
+
+.intro-anim__letter {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity;
+}
+
+/* SKIP HINT */
+.intro-anim__skip {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 230, 0.30);
+  pointer-events: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  z-index: 5;
+}
+
+/* ============================================================
+   Hide the navbar logo while the intro is playing so the FLIP
+   handoff lands on the same pixel without a duplicate visible.
+   ============================================================ */
+body[data-intro-playing="1"] #navbar-logo {
+  visibility: hidden;
+}

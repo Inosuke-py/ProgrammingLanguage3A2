@@ -1,0 +1,339 @@
+/* ===== MODULES LIST PAGE ===== */
+.modules-page { padding: var(--space-8) 0; padding-top: 72px; min-height: 80vh; }
+
+.modules-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);
+}
+.modules-title {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: var(--text-3xl); font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Tabs */
+.modules-tabs {
+  display: flex; gap: var(--space-1);
+  margin-bottom: var(--space-5);
+}
+.modules-tab {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-tertiary);
+  background: transparent; border: 1px solid var(--color-border);
+  cursor: pointer; transition: all 0.15s;
+}
+.modules-tab:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+.modules-tab--active {
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+  border-color: var(--color-accent);
+}
+
+/* Grid */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===== SEARCH & SORT BAR ===== */
+.modules-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.modules-search {
+  flex: 1;
+  position: relative;
+}
+.modules-search__icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+.modules-search__input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.modules-search__input::placeholder {
+  color: var(--color-text-tertiary);
+}
+.modules-search__input:focus {
+  border-color: var(--color-accent);
+}
+
+.modules-sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+.modules-sort__select {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 4px;
+}
+.modules-sort__select option {
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 480px) {
+  .modules-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.modules-empty {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--space-3); padding: var(--space-12);
+  color: var(--color-text-tertiary);
+}
+
+/* ===== MODULE CARD ===== */
+.module-card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden; cursor: pointer;
+  transition: all 0.2s;
+}
+.module-card:hover { border-color: var(--color-accent); }
+
+.module-card__cover {
+  height: 140px;
+  background: hsl(40 20% 94%);
+  position: relative;
+  overflow: hidden;
+}
+.module-card__thumb {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.module-card__thumb .react-pdf__Page {
+  display: flex !important;
+  justify-content: center;
+}
+.module-card__thumb canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+.thumb-loading {
+  width: 100%; height: 140px;
+  background: linear-gradient(90deg, hsl(35 15% 88%) 25%, hsl(35 15% 82%) 50%, hsl(35 15% 88%) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.module-card__pages {
+  position: absolute; bottom: 6px; right: 8px;
+  font-size: 10px; font-weight: 600;
+  background: hsl(0 0% 0% / 0.5);
+  padding: 2px 6px; border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.module-card__body { padding: var(--space-3); }
+.module-card__title {
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.module-card__file {
+  font-size: var(--text-xs); color: var(--color-text-tertiary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block; margin-bottom: var(--space-2);
+}
+.module-card__footer {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.module-card__date { font-size: 10px; color: var(--color-text-tertiary); }
+.module-card__vis {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 500;
+  color: var(--color-text-tertiary);
+}
+.module-card__vis--public { color: hsl(140 60% 55%); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .modules-header { flex-direction: column; align-items: stretch; }
+  .modules-header__actions { width: 100%; }
+  .modules-header__actions .btn,
+  .modules-header__actions label { width: 100%; justify-content: center; }
+}
+
+
+/* ===================================================================
+   ===== UPLOAD-IN-PROGRESS CARD ====================================
+   -------------------------------------------------------------------
+   Sits as the first item in the modules grid while a PDF is being
+   uploaded + processed (text extraction + image rendering). Matches
+   the existing .module-card silhouette so the user sees their upload
+   as a "module being born".
+
+   Skeuomorphic treatment: same surface + shadow tokens used by other
+   raised cards in the app (see index.css). Card body uses the page
+   color so only soft shadows + a 1px highlight define the edges.
+   =================================================================== */
+
+.module-card--uploading {
+  /* Match the regular module card shape but use the skeuomorphic
+     surface + shadow tokens so it reads as a "loading panel". */
+  background: var(--surface-skeuo, var(--color-surface-1));
+  box-shadow: var(--shadow-skeuo, 0 4px 20px rgba(0, 0, 0, 0.3));
+  border: 1px solid transparent;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  animation: upload-card-in 280ms var(--ease-out, ease-out);
+}
+
+.module-card--uploading:hover {
+  /* Override the base .module-card hover — no border accent during upload. */
+  border-color: transparent;
+}
+
+@keyframes upload-card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- Cover area: shimmer + spinning icon ----------------------- */
+.module-card__cover--uploading {
+  /* Inset/sunken look so the icon feels recessed into the card. */
+  background:
+    linear-gradient(135deg,
+      var(--color-surface-2, hsl(220 11% 12%)) 0%,
+      var(--color-surface-1, hsl(220 13% 8%)) 100%);
+  box-shadow:
+    inset 2px 2px 6px hsl(0 0% 0% / 0.45),
+    inset -2px -2px 6px hsl(40 50% 95% / 0.04);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-card__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    hsl(40 50% 95% / 0.06) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: upload-shimmer 1.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes upload-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.upload-card__icon {
+  position: relative;
+  z-index: 2;
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: var(--color-accent);
+  background: var(--surface-skeuo, var(--color-surface-1));
+  box-shadow:
+    inset 0 1px 0 hsl(40 50% 95% / 0.08),
+    0 4px 12px hsl(0 0% 0% / 0.4);
+}
+
+.upload-card__icon .spin { animation: spin 1.1s linear infinite; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ----- Body: stage label, filename, progress bar ---------------- */
+.upload-card__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.upload-card__filename {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 10px;
+}
+
+.upload-card__bar {
+  /* Sunken track with neumorphic inner shadow. */
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-surface-2, hsl(220 11% 12%));
+  box-shadow:
+    inset 1px 1px 2px hsl(0 0% 0% / 0.5),
+    inset -1px -1px 2px hsl(40 50% 95% / 0.03);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.upload-card__bar-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 70%, white)
+  );
+  border-radius: 999px;
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent),
+    inset 0 1px 0 hsl(40 50% 95% / 0.25);
+  transition: width 200ms var(--ease-out, ease-out);
+}
+
+.upload-card__hint {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  line-height: 1.4;
+  min-height: 1.4em; /* prevent height jumps when the text changes */
+}

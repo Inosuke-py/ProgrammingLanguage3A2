@@ -1,0 +1,818 @@
+/* ============================================================
+   Game Mode — Play Screen (skeuomorphic 2D buzzer)
+   ============================================================ */
+
+.gp {
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 80px);
+  /* Clear the fixed navbar (matches Dashboard / Quiz / Modules pages). */
+  padding: calc(var(--space-16) + 20px) var(--space-6) var(--space-5);
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: var(--space-4);
+}
+
+.gp-loading,
+.gp-error {
+  min-height: 70vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-3); text-align: center;
+}
+
+/* ── TOP BAR — wide brass strip with the phase + countdown ── */
+.gp__top {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface-skeuo-elevated);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+}
+.gp__back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+.gp__back:hover { color: var(--color-text-primary); background: var(--color-surface-2); }
+
+.gp__progress {
+  flex: 1;
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  align-items: center; gap: var(--space-3);
+}
+.gp__phase-name {
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-serif); font-style: italic;
+}
+.gp__bar {
+  height: 8px;
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.gp__bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent), white 25%));
+  box-shadow: 0 0 8px var(--color-accent-muted);
+  transition: width 100ms linear;
+}
+.gp__counter {
+  font-size: var(--text-sm); color: var(--color-text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── PLAYER STRIP — bust + score, gold-rimmed when buzzed ── */
+.gp__scores {
+  display: flex; gap: var(--space-3);
+  justify-content: center; align-items: stretch;
+  flex-wrap: wrap;
+}
+.gp__player {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--space-3) var(--space-4);
+  min-width: 130px;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.gp__player-char {
+  flex-shrink: 0;
+}
+.gp__player.is-buzzed {
+  box-shadow:
+    var(--shadow-skeuo-hover),
+    inset 0 0 0 2px var(--color-accent),
+    0 0 24px color-mix(in srgb, var(--color-accent), transparent 60%);
+  transform: translateY(-2px);
+}
+.gp__player.is-buzzed .gm-char {
+  filter: drop-shadow(0 6px 10px var(--color-accent));
+}
+.gp__player.is-locked { opacity: 0.45; filter: grayscale(0.6); }
+.gp__player.is-me {
+  outline: 2px dashed var(--color-accent-muted);
+  outline-offset: -6px;
+}
+.gp__player-bust {
+  display: flex; flex-direction: column; align-items: center;
+  margin-bottom: 2px;
+}
+.gp__player-head {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    color-mix(in srgb, var(--avatar-hue), white 40%),
+    var(--avatar-hue) 60%,
+    color-mix(in srgb, var(--avatar-hue), black 30%));
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4);
+}
+.gp__player-body {
+  width: 26px; height: 14px;
+  border-radius: 6px 6px 4px 4px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--avatar-hue), white 20%),
+    var(--avatar-hue),
+    color-mix(in srgb, var(--avatar-hue), black 30%));
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4);
+  margin-top: -3px;
+}
+.gp__player-name {
+  font-size: var(--text-xs);
+  font-family: var(--font-serif); font-style: italic;
+  color: var(--color-text-primary);
+}
+.gp__player-score {
+  font-size: var(--text-xl); font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-accent);
+}
+
+/* ── STAGE — main game area ── */
+.gp__stage {
+  flex: 1;
+  display: flex; flex-direction: column;
+  gap: var(--space-4);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-6);
+  min-height: 360px;
+}
+
+/* COUNTDOWN */
+.gp__countdown {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-2);
+}
+.gp__count-num {
+  font-size: 120px; font-weight: 700;
+  font-family: var(--font-serif); font-style: italic;
+  color: var(--color-accent);
+  text-shadow:
+    -3px -3px 6px rgba(255,255,255,0.05),
+    4px 4px 12px rgba(0,0,0,0.6);
+  line-height: 1;
+}
+.gp__count-label {
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* QUESTION CARD */
+.gp__question {
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+}
+.gp__question .label {
+  display: block; margin-bottom: var(--space-2);
+  color: var(--color-text-tertiary);
+}
+.gp__question h2 {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--text-2xl);
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-primary);
+}
+.gp__options {
+  list-style: none; padding: 0; margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+@media (max-width: 700px) { .gp__options { grid-template-columns: 1fr; } }
+.gp__options li {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+.gp__option-letter {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-weight: 700; font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+/* BUZZ ROW */
+.gp__buzz-row {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+.gp__buzzer {
+  position: relative;
+  width: 180px; height: 180px;
+  border: none; border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #ff5d5d 0%, #c11d1d 60%, #6e0a0a 100%);
+  color: #fff;
+  font-size: var(--text-2xl); font-weight: 800;
+  letter-spacing: 0.08em;
+  font-family: var(--font-serif); font-style: italic;
+  cursor: pointer;
+  box-shadow:
+    -10px -10px 20px hsl(220 18% 8% / 0.6),
+    12px 12px 28px hsl(0 0% 0% / 0.85),
+    inset 0 -6px 12px rgba(0,0,0,0.4),
+    inset 0 4px 8px rgba(255,255,255,0.18);
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+.gp__buzzer:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    -12px -12px 24px hsl(220 18% 8% / 0.7),
+    14px 14px 32px hsl(0 0% 0% / 0.9),
+    inset 0 -6px 12px rgba(0,0,0,0.4),
+    inset 0 4px 8px rgba(255,255,255,0.2);
+}
+.gp__buzzer:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset -6px -6px 14px rgba(0,0,0,0.5),
+    inset 6px 6px 14px rgba(255,255,255,0.1);
+}
+.gp__buzzer:disabled { opacity: 0.45; cursor: not-allowed; }
+.gp__buzzer-light {
+  position: absolute; top: 18px; right: 18px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffd966 60%, #f5b942 100%);
+  box-shadow: 0 0 14px #ffd966;
+  animation: buzz-pulse 1s ease-in-out infinite;
+}
+@keyframes buzz-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+.gp__buzz-hint {
+  font-size: var(--text-xs); color: var(--color-text-tertiary);
+}
+.gp__buzz-hint kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+
+/* ANSWER FORM */
+.gp__answering {
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  text-align: center;
+  /* Smooth transition out of is-wrong's red treatment so the box
+     doesn't snap from glowing-red to plain when the flash ends. */
+  transition: box-shadow 320ms ease-out, background 320ms ease-out;
+}
+.gp__answering-head {
+  font-size: var(--text-base); color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+.gp__answer-form {
+  display: flex; gap: var(--space-2);
+  max-width: 520px; margin: 0 auto;
+}
+.gp__answer-form input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--color-surface-1);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+}
+.gp__answer-form input:focus { outline: none; border-color: var(--color-accent); }
+.gp__waiting { color: var(--color-text-tertiary); font-style: italic; margin: 0; }
+
+/* REVEAL */
+.gp__reveal {
+  background: var(--surface-skeuo-inset);
+  box-shadow:
+    var(--shadow-skeuo-inset),
+    inset 0 0 0 2px var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  text-align: center;
+}
+.gp__reveal.is-timeout { box-shadow: var(--shadow-skeuo-inset); }
+.gp__reveal h3 {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--text-3xl);
+  color: var(--color-accent);
+  margin: var(--space-2) 0;
+}
+.gp__reveal p { color: var(--color-text-secondary); margin: 0; }
+
+/* END SCREEN */
+.gp-end {
+  min-height: calc(100vh - 80px);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-6);
+}
+.gp-end__card {
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  width: 100%; max-width: 560px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+}
+.gp-end__card svg { color: var(--color-accent); }
+.gp-end__card h1 {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--text-3xl);
+}
+.gp-end__list {
+  list-style: none; padding: 0; margin: var(--space-4) 0;
+  width: 100%;
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.gp-end__list li {
+  display: grid;
+  grid-template-columns: 36px 48px 1fr max-content max-content;
+  align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-md);
+}
+.gp-end__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Reserve the slot even when the player never picked an avatar
+     (abandoned before avatar_select committed). Empty SVG-less cells
+     get a small dimmed circle so the row layout stays balanced. */
+  width: 48px;
+  min-height: 36px;
+}
+.gp-end__avatar:empty::after {
+  content: '';
+  display: block;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  opacity: 0.6;
+  margin: 0 auto;
+}
+.gp-end__list li.is-me {
+  box-shadow:
+    var(--shadow-skeuo-inset),
+    inset 0 0 0 2px var(--color-accent);
+}
+.gp-end__rank {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--text-xl);
+  color: var(--color-accent);
+}
+.gp-end__name {
+  font-size: var(--text-base); color: var(--color-text-primary);
+  text-align: left;
+}
+.gp-end__score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; color: var(--color-text-primary);
+}
+.gp-end__xp {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
+
+/* ============================================================
+   Avatar Select Phase — pre-game 15s avatar pick
+   ============================================================ */
+.gp__avatar-select {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  border-radius: var(--radius-lg);
+}
+.gp__avatar-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 760px;
+}
+.gp__avatar-head .label {
+  font-size: var(--text-2xl);
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--color-text-primary);
+}
+.gp__avatar-countdown {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-md);
+}
+.gp__avatar-countdown-num {
+  font-size: 2.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+  line-height: 1;
+}
+.gp__avatar-countdown-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.gp__avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 760px;
+}
+.gp__avatar-tile {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  min-height: 250px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--surface-skeuo);
+  box-shadow: var(--shadow-skeuo);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+  overflow: hidden;
+}
+.gp__avatar-tile:hover:not(:disabled) {
+  box-shadow: var(--shadow-skeuo-hover);
+  transform: translateY(-3px);
+}
+.gp__avatar-tile:hover:not(:disabled) .gm-char {
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+  transform: translateY(-2px);
+}
+.gp__avatar-tile:active:not(:disabled) {
+  box-shadow: var(--shadow-skeuo-pressed);
+  transform: translateY(0);
+}
+.gp__avatar-tile.is-mine {
+  box-shadow: var(--shadow-skeuo-pressed);
+  outline: 3px solid var(--avatar-hue);
+  outline-offset: -3px;
+}
+.gp__avatar-tile.is-locked {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: grayscale(0.7);
+}
+.gp__avatar-tile-char {
+  transition: filter var(--duration-fast), transform var(--duration-fast);
+}
+.gp__avatar-tile-name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--color-text-primary);
+}
+.gp__avatar-tile-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+}
+.gp__avatar-tile-taken {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.gp__avatar-toast {
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* ============================================================
+   Answer Countdown (player_answering phase)
+   ============================================================ */
+.gp__answer-timer {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-3);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset);
+  border-radius: var(--radius-md);
+  min-width: 180px;
+}
+.gp__answer-timer-num {
+  font-size: 3.2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+  line-height: 1;
+}
+.gp__answer-timer-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.gp__answer-timer-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.gp__answer-timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), #f59e0b);
+  border-radius: 999px;
+  transition: width 200ms linear;
+}
+
+/* ============================================================
+   Wrong-Answer Overlay (centered, all clients see it)
+   ============================================================ */
+.gp__wrong-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(127, 29, 29, 0.32);
+  z-index: 9000;
+  animation: gp-wrong-fade 1800ms ease-out forwards;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+.gp__wrong-card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-8);
+  background: var(--surface-skeuo-elevated);
+  box-shadow:
+    var(--shadow-skeuo-hover),
+    inset 0 0 0 6px #dc2626,
+    0 0 60px rgba(220, 38, 38, 0.55);
+  border-radius: var(--radius-xl);
+  color: #dc2626;
+  animation:
+    gp-wrong-pop 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    gp-wrong-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) 240ms;
+  min-width: 320px;
+  text-align: center;
+}
+.gp__wrong-card.is-self {
+  /* Even louder when YOU were the one who got it wrong. */
+  box-shadow:
+    var(--shadow-skeuo-hover),
+    inset 0 0 0 8px #dc2626,
+    0 0 80px rgba(220, 38, 38, 0.75);
+}
+.gp__wrong-card svg { color: #dc2626; }
+.gp__wrong-title {
+  font-size: 3.6rem;
+  font-weight: 900;
+  font-family: var(--font-serif);
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: #dc2626;
+  line-height: 1;
+  text-shadow: 0 2px 0 #7f1d1d, 0 4px 12px rgba(220,38,38,0.5);
+}
+.gp__wrong-name {
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+.gp__wrong-text {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  max-width: 36ch;
+  text-align: center;
+  margin-top: var(--space-1);
+}
+@keyframes gp-wrong-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes gp-wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+@keyframes gp-wrong-fade {
+  0%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   Localized "wrong" treatment on the answering card
+   (only the submitter sees this — visceral red flash + shake)
+   ============================================================ */
+.gp__answering.is-wrong {
+  animation: gp-answer-shake 600ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  box-shadow:
+    var(--shadow-skeuo-inset),
+    inset 0 0 0 4px #dc2626,
+    0 0 40px rgba(220, 38, 38, 0.5);
+  background: linear-gradient(
+    180deg,
+    var(--surface-skeuo-inset),
+    color-mix(in srgb, var(--surface-skeuo-inset), #dc2626 12%)
+  );
+}
+.gp__answering.is-wrong input {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+@keyframes gp-answer-shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px); }
+  30%, 60%, 90% { transform: translateX(6px); }
+}
+
+/* ============================================================
+   Lockout banner — "Wrong! You're out this question."
+   Sits in the question card area during buzz_open after a wrong
+   so the player keeps seeing why they can't buzz again.
+   ============================================================ */
+.gp__wrong-banner {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-skeuo-inset);
+  box-shadow: var(--shadow-skeuo-inset), inset 0 0 0 2px #dc2626;
+  border-radius: var(--radius-full);
+  color: #dc2626;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  align-self: center;
+  animation: gp-banner-in 200ms ease-out;
+}
+@keyframes gp-banner-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ============================================================
+   Mobile + small-tablet adjustments (Game Mode unlocked on phones)
+   ============================================================ */
+
+/* Tighten outer padding on small screens so the buzzer + question
+   card don't get squeezed off-edge. */
+@media (max-width: 700px) {
+  .gp {
+    padding: calc(var(--space-12) + 12px) var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  /* Top bar: phase name + counter on the same row, progress bar full width below. */
+  .gp__top {
+    grid-template-columns: 1fr;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+  .gp__progress {
+    grid-template-columns: max-content 1fr max-content;
+  }
+
+  /* Score strip — horizontal scroll instead of wrapping (5 players
+     × 130px each won't fit on a 360px phone). */
+  .gp__scores {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    justify-content: flex-start;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .gp__player {
+    flex: 0 0 auto;
+    min-width: 110px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* Stage shrinks a bit. */
+  .gp__stage {
+    padding: var(--space-5) var(--space-3);
+    min-height: 280px;
+  }
+
+  /* Question card: less padding, smaller heading. */
+  .gp__question { padding: var(--space-4); }
+  .gp__question h2 { font-size: var(--text-xl); }
+
+  /* Buzzer: smaller circle but still tappable. */
+  .gp__buzzer {
+    width: 140px; height: 140px;
+    font-size: var(--text-xl);
+  }
+
+  /* Answer countdown digit and form sit comfortably on phones. */
+  .gp__answering { padding: var(--space-4) var(--space-3); }
+  .gp__answer-timer-num { font-size: 2.6rem; }
+  .gp__answer-form {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .gp__answer-form input { width: 100%; }
+  .gp__answer-form .btn { width: 100%; justify-content: center; }
+
+  /* Avatar select — 5 across is too tight on a 360px phone, drop to
+     2 columns and let it scroll naturally on the page. */
+  .gp__avatar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+  .gp__avatar-tile {
+    min-height: 200px;
+    padding: var(--space-3);
+  }
+  .gp__avatar-tile .gm-char {
+    width: 80px !important;
+    height: 96px !important;
+  }
+  .gp__avatar-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .gp__avatar-countdown { align-self: stretch; justify-content: center; }
+
+  /* Wrong overlay — keep dramatic but contained. */
+  .gp__wrong-card { min-width: 240px; padding: var(--space-5) var(--space-6); }
+  .gp__wrong-title { font-size: 2.6rem; }
+
+  /* End-screen ranking grid: collapse to a 2-row layout so each row
+     wraps (rank + avatar + name on top, score + xp below). */
+  .gp-end__list li {
+    grid-template-columns: 36px 48px 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 4px;
+  }
+  .gp-end__score, .gp-end__xp {
+    grid-column: 2 / -1;
+    text-align: left;
+  }
+  .gp-end__card {
+    padding: var(--space-5) var(--space-4);
+  }
+  .gp-end__card h1 { font-size: var(--text-2xl); }
+}
+
+/* Even tighter on very narrow phones (iPhone SE etc.). */
+@media (max-width: 380px) {
+  .gp__buzzer { width: 120px; height: 120px; font-size: var(--text-lg); }
+  .gp__avatar-grid { grid-template-columns: 1fr; }
+  .gp__avatar-tile { min-height: 180px; }
+  .gp__player { min-width: 100px; }
+  .gp__count-num { font-size: 80px; }
+}

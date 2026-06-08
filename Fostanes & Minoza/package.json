@@ -1,0 +1,17 @@
+{
+  "name": "lexara",
+  "version": "1.0.0",
+  "description": "Lexara - AI-Powered Quiz Platform",
+  "private": true,
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "scripts": {
+    "install:all": "cd server && npm install --omit=dev && cd ../client && npm install --include=dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && node src/index.js",
+    "dev:server": "cd server && node src/index.js",
+    "dev:client": "cd client && npx vite --port 5173",
+    "postinstall": "npm run install:all && npm run build"
+  }
+}
